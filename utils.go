@@ -8,6 +8,7 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
+	"os"
 	"strconv"
 )
 
@@ -17,29 +18,29 @@ type keypair struct {
 }
 
 func main() {
-	/*
-		UNCOMMENT TO TEST METHODS
-		sum := sha256.Sum256([]byte("hello world\n"))
-		fmt.Printf("%x", sum)
 
-		sha256hash("hello world")
-		keypair := generateKeypair()
-		toSign := "date: Thu, 05 Jan 2012 21:31:40 GMT"
-		fmt.Println()
-		var signedMsg = sign(keypair.privKey, toSign)
-		fmt.Println(signedMsg)
+	//UNCOMMENT TO TEST METHODS
+	sum := sha256.Sum256([]byte("hello world\n"))
+	fmt.Printf("%x", sum)
 
-		var res = verifySignature(&keypair.pubKey, toSign, signedMsg)
-		if res != nil {
-			fmt.Fprintf(os.Stderr, "Error from verification: %s\n", res)
-			return
-		} else {
-			fmt.Println("same")
-		}
+	sha256hash("hello world")
+	keypair := generateKeypair()
+	toSign := "date: Thu, 05 Jan 2012 21:31:40 GMT"
+	fmt.Println()
+	var signedMsg = sign(keypair.privKey, toSign)
+	fmt.Println(signedMsg)
 
-		var addr = calcAddress(&keypair.pubKey)
-		fmt.Println(addressMatchesKey(addr, &keypair.pubKey))
-	*/
+	var res = verifySignature(&keypair.pubKey, toSign, signedMsg)
+	if res != nil {
+		fmt.Fprintf(os.Stderr, "Error from verification: %s\n", res)
+		return
+	} else {
+		fmt.Println("same")
+	}
+
+	var addr = calcAddress(&keypair.pubKey)
+	fmt.Println(addressMatchesKey(addr, &keypair.pubKey))
+
 }
 
 func sha256hash(s string) string {
