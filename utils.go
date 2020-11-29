@@ -89,3 +89,8 @@ func calcAddress(pubKey *rsa.PublicKey) string {
 func addressMatchesKey(addr string, pubKey *rsa.PublicKey) bool {
 	return addr == calcAddress(pubKey)
 }
+
+func getStringPubKey(pubKey *rsa.PublicKey) string {
+	var stringPubKey = pubKey.N.String() + "" + strconv.Itoa(pubKey.E)
+	return stringPubKey
+}
