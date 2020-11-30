@@ -2,6 +2,7 @@ package main
 
 import (
 	"crypto/rsa"
+	"fmt"
 	"strings"
 )
 
@@ -58,7 +59,7 @@ func getID(transaction Transaction) string {
 		transaction.from +
 		transaction.nonce +
 		getStringPubKey(&transaction.pubKey) +
-		strings.Join(transaction.outputs, "") +
+		arrayToString(transaction.outputs, ",") +
 		transaction.fee +
 		transaction.data)
 }
@@ -93,4 +94,11 @@ func totalOutputs(transaction Transaction) int {
 		total += value
 	}
 	return total
+}
+
+//from https://stackoverflow.com/questions/37532255/one-liner-to-transform-int-into-string
+func arrayToString(a []int, delim string) string {
+	return strings.Trim(strings.Replace(fmt.Sprint(a), " ", delim, -1), "[]")
+	//return strings.Trim(strings.Join(strings.Split(fmt.Sprint(a), " "), delim), "[]")
+	//return strings.Trim(strings.Join(strings.Fields(fmt.Sprint(a)), delim), "[]")
 }
