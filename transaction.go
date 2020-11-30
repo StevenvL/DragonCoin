@@ -3,6 +3,7 @@ package main
 import (
 	"crypto/rsa"
 	"fmt"
+	"strconv"
 	"strings"
 )
 
@@ -18,7 +19,7 @@ type TransactionIO struct {
 type Transaction struct {
 	tranctionIO TransactionIO
 	from        string
-	nonce       string
+	nonce       int
 	pubKey      rsa.PublicKey
 	sig         []byte
 	outputs     []int
@@ -27,7 +28,7 @@ type Transaction struct {
 	id          string
 }
 
-func newTransaction(from string, nonce string, pubKey rsa.PublicKey, sig []byte, outputs []int, fee string, data string) *Transaction {
+func newTransaction(from string, nonce int, pubKey rsa.PublicKey, sig []byte, outputs []int, fee string, data string) *Transaction {
 	transaction := new(Transaction)
 	transaction.from = from
 	transaction.nonce = nonce
@@ -57,7 +58,7 @@ func newTransaction(from string, nonce string, pubKey rsa.PublicKey, sig []byte,
 func getID(transaction Transaction) string {
 	return sha256hash(TX_CONST +
 		transaction.from +
-		transaction.nonce +
+		strconv.Itoa(transaction.nonce) +
 		getStringPubKey(&transaction.pubKey) +
 		arrayToString(transaction.outputs, ",") +
 		transaction.fee +
