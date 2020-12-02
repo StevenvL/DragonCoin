@@ -40,7 +40,7 @@ func main() {
 	}
 }
 
-type Blockcfg struct {
+type BlockChaincfg struct {
 	powTarget        *big.Int
 	blockClass       Block
 	transactionClass Transaction
@@ -51,7 +51,7 @@ type Blockcfg struct {
 
 type BlockChain struct {
 	blockClass       Block
-	cfg              *Blockcfg
+	cfg              *BlockChaincfg
 	transactionClass Transaction
 	powLeadingZeroes uint
 	coinbaseAmount   int
@@ -71,7 +71,7 @@ func newBlockchain() *BlockChain {
 	return blockchain
 }
 
-func makeGenesis(blockClass Block, transactionClass Transaction, clientBalanceMap map[string]Transaction, blockchain *BlockChain) Block {
+func makeGenesis(blockClass Block, transactionClass Transaction, clientBalanceMap map[string]int, blockchain *BlockChain) Block {
 
 	//if (clientBalanceMap && startingBalances) {
 	//  throw new Error("You may set clientBalanceMap OR set startingBalances, but not both.");
