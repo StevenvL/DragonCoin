@@ -28,7 +28,7 @@ type Transaction struct {
 	id          string
 }
 
-func newTransaction(from string, nonce int, pubKey rsa.PublicKey, sig []byte, outputs []int, fee string, data string) *Transaction {
+func (base Transaction) newTransaction(from string, nonce int, pubKey rsa.PublicKey, sig []byte, outputs []int, fee string, data string) *Transaction {
 	transaction := new(Transaction)
 	transaction.from = from
 	transaction.nonce = nonce
