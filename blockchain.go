@@ -171,3 +171,16 @@ func (blockchain BlockChain) makeTransaction(o Transaction) Transaction {
 	return o
 
 }
+
+func (blockChaincfg BlockChaincfg) getPOW_TARGET() *big.Int {
+	return blockChaincfg.powTarget
+}
+func (blockChaincfg BlockChaincfg) getCOINBASE_AMT_ALLOWED() int {
+	return blockChaincfg.coinbaseAmount
+}
+func (blockChaincfg BlockChaincfg) getDEFAULT_TX_FEE() int {
+	return blockChaincfg.defaultTxFee
+}
+func (blockChaincfg BlockChaincfg) getCONFIRMED_DEPTH() int {
+	return blockChaincfg.confirmedDepth
+}
