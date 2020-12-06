@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"crypto"
 	"crypto/rand"
 	"crypto/rsa"
@@ -8,7 +9,8 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
-	"os"
+
+	//"os"
 	"strconv"
 )
 
@@ -17,6 +19,7 @@ type keypair struct {
 	privKey *rsa.PrivateKey
 }
 
+/*
 func main() {
 
 	//UNCOMMENT TO TEST METHODS
@@ -41,7 +44,7 @@ func main() {
 	var addr = calcAddress(&keypair.pubKey)
 	fmt.Println(addressMatchesKey(addr, &keypair.pubKey))
 
-}
+}*/
 
 func sha256hash(s string) string {
 	res := sha256.Sum256([]byte(s))
@@ -94,4 +97,13 @@ func addressMatchesKey(addr string, pubKey *rsa.PublicKey) bool {
 func getStringPubKey(pubKey *rsa.PublicKey) string {
 	var stringPubKey = pubKey.N.String() + "" + strconv.Itoa(pubKey.E)
 	return stringPubKey
+}
+
+// https://stackoverflow.com/questions/48149969/converting-map-to-string-in-golang/48153686
+func mapToString(m map[string]int) string {
+	b := new(bytes.Buffer)
+	for key, value := range m {
+		fmt.Fprintf(b, "%s=\"%d\"\n", key, value)
+	}
+	return b.String()
 }

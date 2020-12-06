@@ -2,8 +2,8 @@ package main
 
 import (
 	"crypto/rsa"
+	"encoding/json"
 	"fmt"
-	"strconv"
 	"strings"
 )
 
@@ -22,13 +22,13 @@ type Transaction struct {
 	nonce       int
 	pubKey      rsa.PublicKey
 	sig         []byte
-	outputs     []int
-	fee         string
+	outputs     map[string]int
+	fee         int
 	data        string
 	id          string
 }
 
-func (base Transaction) newTransaction(from string, nonce int, pubKey rsa.PublicKey, sig []byte, outputs []int, fee string, data string) *Transaction {
+func (base Transaction) newTransaction(from string, nonce int, pubKey rsa.PublicKey, sig []byte, outputs map[string]int, fee int, data string) *Transaction {
 	transaction := new(Transaction)
 	transaction.from = from
 	transaction.nonce = nonce
@@ -56,13 +56,17 @@ func (base Transaction) newTransaction(from string, nonce int, pubKey rsa.Public
 }
 
 func getID(transaction Transaction) string {
-	return sha256hash(TX_CONST +
-		transaction.from +
-		strconv.Itoa(transaction.nonce) +
-		getStringPubKey(&transaction.pubKey) +
-		arrayToString(transaction.outputs, ",") +
-		transaction.fee +
-		transaction.data)
+	/*
+		return sha256hash(TX_CONST +
+			transaction.from +
+			strconv.Itoa(transaction.nonce) +
+			getStringPubKey(&transaction.pubKey) +
+			arrayToString(transaction.outputs, ",") +
+			strconv.Itoa(transaction.fee) +
+			transaction.data)
+	*/
+	b, _ := json.Marshal(transaction)
+	return sha256hash(TX_CONST + string(b))
 }
 
 //Passes transaction by pointer so we can modify inside it.
@@ -85,13 +89,13 @@ func validSignatureTransaction(transaction Transaction) bool {
 }
 
 //TODO!!!!!!! needs BLOCK.GO
-func sufficientFunds(block Block) bool {
-
+func (base Transaction) sufficientFunds(block Block) bool {
+	return true
 }
 
 func totalOutputs(transaction Transaction) int {
 	var total = 0
-	for index, value := range transaction.outputs {
+	for _, value := range transaction.outputs {
 		total += value
 	}
 	return total

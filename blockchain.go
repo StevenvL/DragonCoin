@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"math/big"
 	"reflect"
-	"strconv"
 )
 
 // Network message constants
@@ -67,11 +66,11 @@ func newBlockchain() *BlockChain {
 	blockchain.coinbaseAmount = COINBASE_AMT_ALLOWED
 	blockchain.defaultTxFee = DEFAULT_TX_FEE
 	blockchain.confirmedDepth = CONFIRMED_DEPTH
-	blockchain.cfg = new(Blockcfg)
+	blockchain.cfg = new(BlockChaincfg)
 	return blockchain
 }
 
-func makeGenesis(blockClass Block, transactionClass Transaction, clientBalanceMap map[string]int, blockchain *BlockChain) Block {
+func makeGenesis(blockClass Block, transactionClass Transaction, clientBalanceMap map[string]int, blockchain *BlockChain) *Block {
 
 	//if (clientBalanceMap && startingBalances) {
 	//  throw new Error("You may set clientBalanceMap OR set startingBalances, but not both.");
@@ -100,7 +99,7 @@ func makeGenesis(blockClass Block, transactionClass Transaction, clientBalanceMa
 		  }
 		}*/
 
-	g := blockchain.makeBlock()
+	g := blockchain.makeEmptyBlock()
 
 	// Initializing starting balances in the genesis block.
 	for addr, balance := range clientBalanceMap {
@@ -125,40 +124,42 @@ func makeGenesis(blockClass Block, transactionClass Transaction, clientBalanceMa
  *
  * @returns {Block}
  */
-func deserializeBlock(o Block, blockchain *BlockChain) *Block {
-	if reflect.TypeOf(o) == reflect.TypeOf(blockchain.cfg.blockClass) {
-		return o
-	}
+func deserializeBlock(o Block, blockchain *BlockChain) Block {
+	//if reflect.TypeOf(o) == reflect.TypeOf(blockchain.cfg.blockClass) {
+	return o
+	//}
 
-	b := blockchain.cfg.blockClass.newBlock()
-	b.chainLength, _ = strconv.ParseInt(o.chainLength, 10, 32)
-	b.timestamp = o.timestamp
+	/*
+		b := blockchain.cfg.blockClass.newBlock(blockchain)
+		b.chainLength, _ = strconv.ParseInt(o.chainLength, 10, 32)
+		b.timestamp = o.timestamp
 
-	if b.isGenesisBlock() {
-		// Balances need to be recreated and restored in a map.
-		for clientID, amount := range o.balances {
-			b.balances[clientID] = amount
-		}
-	} else {
-		b.prevBlockHash = o.prevBlockHash
-		b.proof = o.proof
-		b.rewardAddr = o.rewardAddr
-		// Likewise, transactions need to be recreated and restored in a map.
-		b.transactions = make(map[string]Transaction)
-		if len(o.transactions) != 0 {
-			for txID, txJson := range o.transactions {
-				//tx := blockchain.cfg.transactionClass.newTransaction(txJson) NO JSON SUPPORT
-				tx := txJson
-				b.transactions[txID] = tx
+		if b.isGenesisBlock() {
+			// Balances need to be recreated and restored in a map.
+			for clientID, amount := range o.balances {
+				b.balances[clientID] = amount
+			}
+		} else {
+			b.prevBlockHash = o.prevBlockHash
+			b.proof = o.proof
+			b.rewardAddr = o.rewardAddr
+			// Likewise, transactions need to be recreated and restored in a map.
+			b.transactions = make(map[string]Transaction)
+			if len(o.transactions) != 0 {
+				for txID, txJson := range o.transactions {
+					//tx := blockchain.cfg.transactionClass.newTransaction(txJson) NO JSON SUPPORT
+					tx := txJson
+					b.transactions[txID] = tx
+				}
 			}
 		}
-	}
 
-	return b
+		return b
+	*/
 }
 
-func (blockchain BlockChain) makeBlock(a ...interface{}) *Block {
-	return blockchain.cfg.blockClass.newBlock(a)
+func (blockchain BlockChain) makeEmptyBlock() *Block {
+	return blockchain.cfg.blockClass.emptyBlock()
 }
 
 func (blockchain BlockChain) makeTransaction(o Transaction) Transaction {
