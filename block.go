@@ -415,6 +415,6 @@ func (base Block) getClass() string {
 	return choice
 }
 
-func (base Block) getCharacter() string {
+func (base Block) generateDnDCharacter() string {
 	return base.getRace() + " " + base.getClass()
 }
