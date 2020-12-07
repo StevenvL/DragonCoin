@@ -238,7 +238,7 @@ func (base Block) addTransaction(tx Transaction) bool {
 
 	// Taking gold from the sender
 	senderBalance := base.balanceOf(tx.from)
-	base.balances[tx.from] = senderBalance - totalOutputs(tx)
+	base.balances[tx.from] = senderBalance - tx.totalOutputs()
 
 	// Giving gold to the specified output addresses
 	for address, amount := range tx.outputs {
@@ -329,4 +329,92 @@ func (base Block) contains(tx Transaction) bool {
 	} else {
 		return false
 	}
+}
+
+func (base Block) getRace() string {
+	ind := 1
+	choice := string(base.getID()[ind])
+	switch choice {
+	case "0":
+		choice = "Dragonborn"
+	case "1":
+		choice = "Dwarf"
+	case "2":
+		choice = "Elf"
+	case "3":
+		choice = "Gnome"
+	case "4":
+		choice = "Human"
+	case "5":
+		choice = "Halfling"
+	case "6":
+		choice = "Tiefling"
+	case "7":
+		choice = "Orc"
+	case "8":
+		choice = "Goliath"
+	case "9":
+		choice = "Aasimar"
+	case "10":
+		choice = "Aarakocra"
+	case "a":
+		choice = "Firbolg"
+	case "b":
+		choice = "Kenku"
+	case "c":
+		choice = "Tortle"
+	case "d":
+		choice = "Lizardfolk"
+	case "e":
+		choice = "Kobold"
+	case "f":
+		choice = "Gith"
+	}
+	return choice
+}
+
+func (base Block) getClass() string {
+	ind := 0
+	choice := string(base.getID()[ind])
+	switch choice {
+	case "0":
+		choice = "Fighter"
+	case "1":
+		choice = "Rogue"
+	case "2":
+		choice = "Wizard"
+	case "3":
+		choice = "Ranger"
+	case "4":
+		choice = "Druid"
+	case "5":
+		choice = "Sorcerer"
+	case "6":
+		choice = "Warlock"
+	case "7":
+		choice = "Paladin"
+	case "8":
+		choice = "Bard"
+	case "9":
+		choice = "Barbarian"
+	case "10":
+		choice = "Cleric"
+	case "a":
+		choice = "Monk"
+	case "b":
+		choice = "Artificer"
+	case "c":
+		choice = "Gunslinger"
+	case "d":
+		choice = "Blood Hunter"
+	case "e":
+		choice = "Noble"
+	case "f":
+		choice = "Commoner"
+	}
+	return choice
+}
+
+func (base Block) getCharacter() string {
+	return base.getRace() + " " + base.getClass()
 }
