@@ -43,13 +43,13 @@ func (base Transaction) newTransaction(from string, nonce int, pubKey rsa.Public
 
 	}
 	/* UNSURE IF WE NEED TO CONVER TO GOLANG
-		   Looks like it just parses the int to decimal.
-		 if (outputs) outputs.forEach(({amount, address}) => {
-	      if (typeof amount !== 'number') {
-	        amount = parseInt(amount, 10);
-	      }
-	      this.outputs.push({amount, address});
-		});
+	      Looks like it just parses the int to decimal.
+	    if (outputs) outputs.forEach(({amount, address}) => {
+	     if (typeof amount !== 'number') {
+	       amount = parseInt(amount, 10);
+	     }
+	     this.outputs.push({amount, address});
+	   });
 	*/
 
 	return transaction
@@ -57,25 +57,37 @@ func (base Transaction) newTransaction(from string, nonce int, pubKey rsa.Public
 
 func getID(transaction Transaction) string {
 	/*
-		return sha256hash(TX_CONST +
-			transaction.from +
-			strconv.Itoa(transaction.nonce) +
-			getStringPubKey(&transaction.pubKey) +
-			arrayToString(transaction.outputs, ",") +
-			strconv.Itoa(transaction.fee) +
-			transaction.data)
+	   return sha256hash(TX_CONST +
+	       transaction.from +
+	       strconv.Itoa(transaction.nonce) +
+	       getStringPubKey(&transaction.pubKey) +
+	       arrayToString(transaction.outputs, ",") +
+	       strconv.Itoa(transaction.fee) +
+	       transaction.data)
 	*/
 	b, _ := json.Marshal(transaction)
 	return sha256hash(TX_CONST + string(b))
 }
 
 //Passes transaction by pointer so we can modify inside it.
+/**
+ * Determines whether the signature of the transaction is valid
+ * and if the from address matches the public key.
+ *
+ * @returns {Boolean} - Validity of the signature and from address.
+ */
 func signTransaction(privKey *rsa.PrivateKey, transaction *Transaction) {
 	id := getID(*transaction)
 	res := sign(privKey, id)
 	transaction.sig = res
 }
 
+/**
+ * Determines whether the signature of the transaction is valid
+ * and if the from address matches the public key.
+ *
+ * @returns {Boolean} - Validity of the signature and from address.
+ */
 func validSignatureTransaction(transaction Transaction) bool {
 	bool1 := len(transaction.sig) != 0
 	bool2 := addressMatchesKey(transaction.from, &transaction.pubKey)
@@ -88,12 +100,25 @@ func validSignatureTransaction(transaction Transaction) bool {
 	return bool1 && bool2 && bool3
 }
 
+/**
+ * Verifies that there is currently sufficient gold for the transaction.
+ *
+ * @param {Block} block - Block used to check current balances
+ *
+ * @returns {boolean} - True if there are sufficient funds for the transaction,
+ *    according to the balances from the specified block.
+ */
 func (base Transaction) sufficientFunds(block Block) bool {
 	blockBalanceMap := block.balances
 	blockValue := blockBalanceMap[base.from]
 	return base.totalOutputs() <= blockValue
 }
 
+/**
+ * Calculates the total value of all outputs, including the transaction fee.
+ *
+ * @returns {Number} - Total amount of gold given out with this transaction.
+ */
 func (base Transaction) totalOutputs() int {
 	var total = 0
 	for _, value := range base.outputs {
