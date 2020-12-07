@@ -88,14 +88,15 @@ func validSignatureTransaction(transaction Transaction) bool {
 	return bool1 && bool2 && bool3
 }
 
-//TODO!!!!!!! needs BLOCK.GO
 func (base Transaction) sufficientFunds(block Block) bool {
-	return true
+	blockBalanceMap := block.balances
+	blockValue := blockBalanceMap[base.from]
+	return base.totalOutputs() <= blockValue
 }
 
-func totalOutputs(transaction Transaction) int {
+func (base Transaction) totalOutputs() int {
 	var total = 0
-	for _, value := range transaction.outputs {
+	for _, value := range base.outputs {
 		total += value
 	}
 	return total
