@@ -1,6 +1,8 @@
 package main
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
 
 	"github.com/chuckpreslar/emission"
@@ -143,15 +145,147 @@ func (base Client) postTransaction(outputs map[string]int, fee int, payPerAddres
 * @param {Block | Object} block - The block to add to the clients list of available blocks.
    *
    * @returns {Block | null} The block with rerun transactions, or null for an invalid block.
+   if NIL, that means no erros and valid block
+   otherwise we have invalid block.
+
 */
 
-func (base Client) receiveBlock(block Block) *Block {
-	block
+///TODO
+func (base Client) receiveBlock(block Block) (Block, error) {
+	// If the block is a string, then deserialize it.
 	block = deserializeBlock(block, blockchain)
 
+	// Ignore the block if it has been received previously.
 	if val, ok := base.blocks[block.getID()]; ok {
-		return
+		return block, errors.New("Invalid block")
 	}
 
-	return block
+	// First, make sure that the block has a valid proof.
+	if !block.hasValidProof() && !block.isGenesisBlock() {
+		fmt.Printf("Block %s does not have a valid proof", block.getID())
+		return block, errors.New("Block does not have valid proof")
+	}
+
+	// Make sure that we have the previous blocks, unless it is the genesis block.
+	// If we don't have the previous blocks, request the missing blocks and exit.
+	prevBlock := base.blocks[block.prevBlockHash]
+	if prevBlock.getID() != "" && !prevBlock.isGenesisBlock() {
+		stuckBlocks := base.pendingBlocks[block.prevBlockHash]
+
+		// If this is the first time that we have identified this block as missing,
+		// send out a request for the block.
+		if stuckBlocks.getID() != "" {
+			base.requestMissingBlock(block)
+			//stuckBlocks = set()
+		}
+	}
+
+	return block, nil
+}
+
+type Message struct {
+	from    string
+	missing string
+}
+
+/**
+ * Request the previous block from the network.
+ *
+ * @param {Block} block - The block that is connected to a missing block.
+ */
+func (base Client) requestMissingBlock(block Block) {
+	fmt.Print("Asking for missing block %s", block.prevBlockHash)
+	m := Message{base.address, block.prevBlockHash}
+	b, err := json.Marshal(m)
+	if err == nil {
+		emitter.Emit(blockchain.MISSING_BLOCK(), b)
+	} else {
+		fmt.Print("Error in JSON encoding in requestMissingBlock()")
+	}
+}
+
+/**
+ * Resend any transactions in the pending list.
+ */
+func (base Client) resendPendingTransactions() {
+	for key, value := range base.pendingOutGoingTransactionsMap {
+		emitter.Emit(blockchain.POST_TRANSACTION(), value)
+	}
+}
+
+/**
+ * Takes an object representing a request for a misssing block.
+ * If the client has the block, it will send the block to the
+ * client that requested it.
+ *
+ * @param {Object} msg - Request for a missing block.
+ * @param {String} msg.missing - ID of the missing block.
+ */
+func (base Client) provideMissingBlock(msg []byte) {
+	var message Message
+	json.Unmarshal([]byte(msg), &message)
+	if val, ok := base.blocks[message.missing]; ok {
+		fmt.Print("Providing missing block %s", message.missing)
+		newBlock := base.blocks[message.missing]
+
+		//this.net.sendMessage(msg.from, Blockchain.PROOF_FOUND, block);
+		emitter.Emit(blockchain.PROOF_FOUND(), message.from, newBlock)
+	}
+}
+
+/**
+ * Sets the last confirmed block according to the most recently accepted block,
+ * also updating pending transactions according to this block.
+ * Note that the genesis block is always considered to be confirmed.
+ */
+func (base Client) setLastConfirmed() {
+	block := base.lastBlock
+	confirmedBlockHeight := block.chainLength - blockchain.getCONFIRMED_DEPTH()
+
+	if confirmedBlockHeight < 0 {
+		confirmedBlockHeight = 0
+	}
+
+	//no such thing as while loop in GO
+	for block.chainLength > confirmedBlockHeight {
+		if _, ok := base.blocks[block.prevBlockHash]; ok {
+			block = base.blocks[block.prevBlockHash]
+		}
+	}
+	base.lastConfirmedBlock = block
+
+	// Update pending transactions according to the new last confirmed block.
+	for txID, tx := range base.pendingOutGoingTransactionsMap {
+		if base.lastConfirmedBlock.contains(tx) {
+			delete(base.pendingOutGoingTransactionsMap, txID)
+		}
+	}
+}
+
+func (base Client) showAllBalances() {
+	fmt.Print("Show all balances:")
+
+	for id, balance := range base.lastConfirmedBlock.balances {
+		fmt.Printf("%s: %d", id, balance)
+	}
+}
+
+func (base Client) log(msg string) {
+	nameToDisplay := base.name
+	if base.name == "" {
+		nameToDisplay = base.address[0:10]
+	}
+
+	fmt.Printf("%s: %s", nameToDisplay, msg)
+}
+
+func (base Client) showBlockChain() {
+	block := base.lastBlock
+	fmt.Print("BLOCKCHAIN:")
+	for block.getID() != "" {
+		fmt.Printf("%s", block.getID())
+		if _, ok := base.blocks[block.prevBlockHash]; ok {
+			block = base.blocks[block.prevBlockHash]
+		}
+	}
 }
