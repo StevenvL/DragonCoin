@@ -187,3 +187,23 @@ func (blockChaincfg BlockChaincfg) getDEFAULT_TX_FEE() int {
 func (blockChaincfg BlockChaincfg) getCONFIRMED_DEPTH() int {
 	return blockChaincfg.confirmedDepth
 }
+
+func (blockchain BlockChain) MISSING_BLOCK() string {
+	return MISSING_BLOCK
+}
+
+func (blockchain BlockChain) POST_TRANSACTION() string {
+	return POST_TRANSACTION
+}
+
+func (blockchain BlockChain) PROOF_FOUND() string {
+	return PROOF_FOUND
+}
+
+func (blockchain BlockChain) START_MINING() string {
+	return START_MINING
+}
+
+func (blockchain BlockChain) NUM_ROUNDS_MINING() int {
+	return NUM_ROUNDS_MINING
+}
