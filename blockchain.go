@@ -175,17 +175,17 @@ func (blockchain BlockChain) makeTransaction(o Transaction) Transaction {
 
 }
 
-func (blockChaincfg BlockChaincfg) getPOW_TARGET() *big.Int {
-	return blockChaincfg.powTarget
+func (blockchain BlockChain) getPOW_TARGET() *big.Int {
+	return blockchain.cfg.powTarget
 }
-func (blockChaincfg BlockChaincfg) getCOINBASE_AMT_ALLOWED() int {
-	return blockChaincfg.coinbaseAmount
+func (blockchain BlockChain) getCOINBASE_AMT_ALLOWED() int {
+	return blockchain.cfg.coinbaseAmount
 }
-func (blockChaincfg BlockChaincfg) getDEFAULT_TX_FEE() int {
-	return blockChaincfg.defaultTxFee
+func (blockchain BlockChain) getDEFAULT_TX_FEE() int {
+	return blockchain.cfg.defaultTxFee
 }
-func (blockChaincfg BlockChaincfg) getCONFIRMED_DEPTH() int {
-	return blockChaincfg.confirmedDepth
+func (blockchain BlockChain) getCONFIRMED_DEPTH() int {
+	return blockchain.cfg.confirmedDepth
 }
 
 func (blockchain BlockChain) MISSING_BLOCK() string {
