@@ -21,6 +21,7 @@ type Block struct {
 	timestamp      string
 	rewardAddr     string
 	coinbaseReward int
+	proof          int
 }
 
 /**

@@ -26,7 +26,7 @@ type Client struct {
 	lastConfirmedBlock             Block
 }
 
-func newClient(name string, keypairClient keypair, startingBlock Block) {
+func newClient(name string, keypairClient keypair, startingBlock Block) *Client {
 	client := new(Client)
 	client.name = name
 
@@ -49,7 +49,7 @@ func newClient(name string, keypairClient keypair, startingBlock Block) {
 	if startingBlock.getID() != "" {
 		client.setGenesisBlock(startingBlock)
 	}
-
+	return client
 }
 
 /**
@@ -116,7 +116,7 @@ func (base Client) availableGold() int {
   *
   * @returns {Transaction} - The posted transaction.
 */
-func (base Client) postTransaction(outputs map[string]int, fee int, payPerAddress []int, clientList *[]Client) Transaction {
+func (base Client) postTransaction(outputs map[string]int, fee int) Transaction {
 	var totalPayments = 0
 	for _, element := range outputs {
 		totalPayments += element
