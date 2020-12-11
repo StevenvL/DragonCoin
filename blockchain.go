@@ -30,6 +30,7 @@ const DEFAULT_TX_FEE int = 1
 // Note that the genesis block is always considered to be confirmed.
 const CONFIRMED_DEPTH int = 6
 
+/*
 func main() {
 	/*
 		if _, ok := POW_BASE_TARGET.SetString("ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", 16); ok {
@@ -37,10 +38,11 @@ func main() {
 			fmt.Printf("number = %v\n", POW_BASE_TARGET)
 		} else {
 			fmt.Printf("rip")
-		}*/
+		}
 	block := new(Block)
 	fmt.Printf(block.getCharacter())
 }
+*/
 
 type BlockChaincfg struct {
 	powTarget        *big.Int
