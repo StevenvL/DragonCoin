@@ -49,6 +49,10 @@ func newClient(name string, keypairClient keypair, startingBlock Block) *Client 
 	if startingBlock.getID() != "" {
 		client.setGenesisBlock(startingBlock)
 	}
+
+	emitter.On(blockchain.PROOF_FOUND(), client.receiveBlock)
+	emitter.On(blockchain.MISSING_BLOCK(), client.provideMissingBlock)
+
 	return client
 }
 
@@ -156,7 +160,7 @@ func (base Client) receiveBlock(block Block) (Block, error) {
 	block = deserializeBlock(block, blockchain)
 
 	// Ignore the block if it has been received previously.
-	if val, ok := base.blocks[block.getID()]; ok {
+	if _, ok := base.blocks[block.getID()]; ok {
 		return block, errors.New("Invalid block")
 	}
 
@@ -208,7 +212,7 @@ func (base Client) requestMissingBlock(block Block) {
  * Resend any transactions in the pending list.
  */
 func (base Client) resendPendingTransactions() {
-	for key, value := range base.pendingOutGoingTransactionsMap {
+	for _, value := range base.pendingOutGoingTransactionsMap {
 		emitter.Emit(blockchain.POST_TRANSACTION(), value)
 	}
 }
@@ -224,7 +228,7 @@ func (base Client) resendPendingTransactions() {
 func (base Client) provideMissingBlock(msg []byte) {
 	var message Message
 	json.Unmarshal([]byte(msg), &message)
-	if val, ok := base.blocks[message.missing]; ok {
+	if _, ok := base.blocks[message.missing]; ok {
 		fmt.Print("Providing missing block %s", message.missing)
 		newBlock := base.blocks[message.missing]
 

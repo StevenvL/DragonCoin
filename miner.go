@@ -45,7 +45,7 @@ func (base Miner) startNewSearch(set []Transaction) {
 	//suppoed to pass this.address and this.miningrounds to it...
 	base.currentBlock = *blockchain.makeEmptyBlock()
 
-	for index, tx := range set {
+	for _, tx := range set {
 		base.addTransaction(tx)
 	}
 
@@ -107,7 +107,8 @@ func (base Miner) syncTransactions(nb Block) []Transaction {
 	var nbTxs []Transaction
 
 	for nb.chainLength > cb.chainLength {
-		for index, element := range nb.transactions {
+		for _, element := range nb.transactions {
+			nbTxs = append(nbTxs, element)
 			nb = base.blocks[nb.prevBlockHash]
 			if nb.getID() == "" {
 				fmt.Print("no result found in map")
@@ -116,10 +117,10 @@ func (base Miner) syncTransactions(nb Block) []Transaction {
 	}
 
 	for cb.getID() != "" && cb.getID() != nb.getID() {
-		for index, element := range cb.transactions {
+		for _, element := range cb.transactions {
 			cbTxs = append(cbTxs, element)
 		}
-		for index, element := range nb.transactions {
+		for _, element := range nb.transactions {
 			nbTxs = append(nbTxs, element)
 		}
 
@@ -127,7 +128,7 @@ func (base Miner) syncTransactions(nb Block) []Transaction {
 		nb = base.blocks[nb.prevBlockHash]
 	}
 
-	for index, element := range nbTxs {
+	for _, element := range nbTxs {
 		indexInCbTxs := indexOf(element, cbTxs)
 		if indexInCbTxs != 1 {
 			cbTxs = remove(cbTxs, indexInCbTxs)
