@@ -75,7 +75,7 @@ func newBlockchain() *BlockChain {
 	return blockchain
 }
 
-func makeGenesis(blockClass Block, transactionClass Transaction, clientBalanceMap map[Client]int, blockchain *BlockChain) *Block {
+func makeGenesis(blockClass Block, transactionClass Transaction, clientBalanceMap map[string]int, clientAddrMap map[string]Client, blockchain *BlockChain) *Block {
 
 	//if (clientBalanceMap && startingBalances) {
 	//  throw new Error("You may set clientBalanceMap OR set startingBalances, but not both.");
@@ -107,15 +107,15 @@ func makeGenesis(blockClass Block, transactionClass Transaction, clientBalanceMa
 	g := blockchain.makeEmptyBlock()
 
 	// Initializing starting balances in the genesis block.
-	for client, balance := range clientBalanceMap {
-		g.balances[client.address] = balance
+	for address, balance := range clientBalanceMap {
+		g.balances[address] = balance
 	}
 
 	// If clientBalanceMap was specified, we set the genesis block for every client.
-	
-		  for (let client of clientBalanceMap.keys()) {
-			client.setGenesisBlock(g);
-		  }
+
+	for _, client := range clientAddrMap {
+		client.setGenesisBlock(*g)
+	}
 
 	return g
 }
