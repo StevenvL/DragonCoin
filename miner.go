@@ -11,7 +11,7 @@ type Miner struct {
 	startingBlock Block
 	keypairMiner  keypair
 	miningRounds  int
-	currentBlock  Block
+	currentBlock  *Block
 }
 
 func newMiner(name string, keypairMiner keypair, startingBlock Block) *Miner {
@@ -45,7 +45,7 @@ func (base *Miner) startNewSearch(set []Transaction) {
 	//suppoed to pass this.address and this.miningrounds to it...
 	//fmt.Println("MINER.GO LINE 47")
 	//fmt.Println(base.Client.lastBlock)
-	base.currentBlock = *base.Client.lastBlock.makeBlock(base.Client.address)
+	base.currentBlock = base.Client.lastBlock.makeBlock(base.Client.address)
 	//fmt.Println(base.currentBlock)
 
 	for _, tx := range set {
@@ -92,8 +92,8 @@ func (base Miner) announceProof() {
 	//this.net.broadcast(Blockchain.PROOF_FOUND, this.currentBlock);
 }
 
-func (base Miner) receiveBlock(block Block) error {
-	b, err := base.Client.receiveBlock(block)
+func (base Miner) receiveBlock(block *Block) error {
+	b, err := base.Client.receiveBlock(*block)
 
 	if err != nil {
 		return errors.New("Invalid block")
@@ -109,7 +109,7 @@ func (base Miner) receiveBlock(block Block) error {
 }
 
 func (base Miner) syncTransactions(nb Block) []Transaction {
-	cb := base.currentBlock
+	cb := *base.currentBlock
 	var cbTxs []Transaction
 	var nbTxs []Transaction
 

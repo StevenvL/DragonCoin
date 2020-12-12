@@ -104,13 +104,14 @@ func (base Block) isGenesisBlock() bool {
  */
 func (base Block) hasValidProof() bool {
 	h := sha256hash(base.serialize())
-	fmt.Println(base.serialize())
+	//fmt.Println(base.serialize())
 	//fmt.Println(h)
 	n := big.NewInt(0)
 	if _, ok := n.SetString(h, 16); ok {
 	} else {
 		fmt.Printf("rip")
 	}
+	//fmt.Println(n)
 	//fmt.Println("BLOCK.GO LINE 112")
 	//fmt.Println(n)
 	//fmt.Println(base.target)
