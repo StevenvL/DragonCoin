@@ -165,7 +165,6 @@ func (base Client) postTransaction(outputs map[string]int, fee int) Transaction 
 
 */
 
-///TODO
 func (base Client) receiveBlock(block Block) (Block, error) {
 	// If the block is a string, then deserialize it.
 	block = deserializeBlock(block, blockchain)
@@ -189,10 +188,38 @@ func (base Client) receiveBlock(block Block) (Block, error) {
 
 		// If this is the first time that we have identified this block as missing,
 		// send out a request for the block.
+		var stuckBlocksMap map[string]Block
 		if stuckBlocks.getID() != "" {
 			base.requestMissingBlock(block)
-			//stuckBlocks = set()
+			stuckBlocksMap = make(map[string]Block)
 		}
+		stuckBlocksMap[block.getID()] = block
+	}
+
+	if block.isGenesisBlock() {
+		success := block.rerun(prevBlock)
+		if success == false {
+			return block, errors.New("Success is false")
+		}
+	}
+
+	base.blocks[block.getID()] = block
+
+	if base.lastBlock.chainLength < block.chainLength {
+		base.lastBlock = block
+		base.setLastConfirmed()
+	}
+
+	var unstuckBlocks []Block
+	if _, ok := base.pendingBlocks[block.getID()]; ok {
+		unstuckBlocks = append(unstuckBlocks, base.pendingBlocks[block.getID()])
+	}
+
+	delete(base.pendingBlocks, block.getID())
+
+	for _, block := range unstuckBlocks {
+		fmt.Printf("Processing unstuck block %s", block.getID())
+		base.receiveBlock(block)
 	}
 
 	return block, nil
