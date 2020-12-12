@@ -41,13 +41,21 @@ func (base FakeNet) broadcast(message string, jsonObject []byte) {
 //TODO
 //UNSURE IF THIS EMITS TO THE RIGHT CLIENT OR EVERY CLIENT
 func (base FakeNet) sendMessage(address string, message string, jsonObject []byte) {
-	//curClient := base.clients[address]
-	var block Block
-	err := json.Unmarshal(jsonObject, &block)
-	if err != nil {
-		fmt.Printf(`Error code in sendMessage is %s`, err)
+	if message == "POST_TRANSACTION" {
+		var tx Transaction
+		err := json.Unmarshal(jsonObject, &tx)
+		if err != nil {
+			fmt.Printf(`Error tx in sendMessage is %s`, err)
+		}
+		base.clients[address].emitter.Emit(message, tx)
+	} else {
+		var block Block
+		err := json.Unmarshal(jsonObject, &block)
+		if err != nil {
+			fmt.Printf(`Error block in sendMessage is %s`, err)
+		}
+		base.clients[address].emitter.Emit(message, block)
 	}
-	base.clients[address].emitter.Emit(message, block)
 }
 
 func (base FakeNet) recognizes(client Client) bool {
