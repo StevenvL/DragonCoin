@@ -151,7 +151,7 @@ func (base Client) postTransaction(outputs map[string]int, fee int) Transaction 
 	base.nonce++
 
 	//this.net.broadcast(Blockchain.POST_TRANSACTION, tx); HOW TO DO THIS???
-	emitter.Emit(blockchain.POST_TRANSACTION, resTx)
+	emitter.Emit(blockchain.POST_TRANSACTION(), resTx)
 
 	return resTx
 }

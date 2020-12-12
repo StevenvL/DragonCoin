@@ -29,8 +29,9 @@ func (base Miner) initialize() {
 	base.startNewSearch(set)
 
 	//Not sure if these lines even work
-	emitter.On(blockchain.START_MINING, base.findProof)
-	emitter.On(blockchain.POST_TRANSACTION, base.addTransaction)
+	fmt.Print("reached here2")
+	emitter.On(blockchain.START_MINING(), base.findProof)
+	emitter.On(blockchain.POST_TRANSACTION(), base.addTransaction)
 
 	time.AfterFunc(0*time.Second, emitStartMining)
 }
