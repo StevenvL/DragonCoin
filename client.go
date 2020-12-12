@@ -5,11 +5,12 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/chuckpreslar/emission"
+	emission "github.com/chuckpreslar/emission"
 )
 
-var blockchain = newBlockchain()
-var emitter = emission.NewEmitter()
+//var blockchain = newBlockchain()
+
+//var emitter = emission.NewEmitter()
 
 //Client NEED TO ADD STUFF DEALING WITH BLOCK
 type Client struct {
@@ -23,6 +24,7 @@ type Client struct {
 	pendingBlocks                  map[string]Block
 	lastBlock                      Block
 	lastConfirmedBlock             Block
+	emitter                        *emission.Emitter
 }
 
 func (base Client) String() string {
@@ -48,13 +50,17 @@ func newClient(name string, keypairClient keypair, startingBlock Block) *Client 
 	// A map of all block hashes to the accepted blocks.
 	client.blocks = make(map[string]Block)
 	client.pendingBlocks = make(map[string]Block)
+	//fmt.Println("CLIENT.GO LINE 53")
+	//fmt.Println(startingBlock)
 
-	if startingBlock.notEmpty {
+	if startingBlock.NotEmpty {
 		client.setGenesisBlock(startingBlock)
 	}
 
-	emitter.On(blockchain.PROOF_FOUND(), client.receiveBlock)
-	emitter.On(blockchain.MISSING_BLOCK(), client.provideMissingBlock)
+	client.emitter = emission.NewEmitter()
+
+	client.emitter.On(PROOF_FOUND, client.receiveBlock)
+	client.emitter.On(MISSING_BLOCK, client.provideMissingBlock)
 
 	return client
 }
@@ -66,10 +72,10 @@ func newClient(name string, keypairClient keypair, startingBlock Block) *Client 
  * @param {Block} startingBlock - The genesis block of the blockchain.
  */
 func (base *Client) setGenesisBlock(startingBlock Block) {
-	if base.lastBlock.notEmpty {
+	if base.lastBlock.NotEmpty {
 		fmt.Print("ERROR!, Cannot set genesis block for existing blockchain")
 	} else {
-
+		//fmt.Println("CLIENT.GO LINE 78")
 		//fmt.Println(startingBlock)
 		// Transactions from this block or older are assumed to be confirmed,
 		// and therefore are spendable by the client. The transactions could
@@ -112,7 +118,7 @@ func (base Client) availableGold() int {
 		pendingSpent += element.totalOutputs()
 	}
 
-	return pendingSpent
+	return base.confirmedBalance() - pendingSpent
 }
 
 /**
@@ -136,6 +142,8 @@ func (base Client) postTransaction(outputs map[string]int, fee int) Transaction 
 	for _, element := range outputs {
 		totalPayments += element
 	}
+	//fmt.Println(totalPayments)
+	//fmt.Println(base.availableGold())
 	if totalPayments > base.availableGold() {
 		fmt.Printf("ERROR!!!, Request %d, but account only has %d", totalPayments, base.availableGold())
 	}
@@ -143,7 +151,7 @@ func (base Client) postTransaction(outputs map[string]int, fee int) Transaction 
 	var tx Transaction
 	var sig = []byte{0}
 	tx.newTransaction(base.address, base.nonce, base.keypairClient.pubKey, sig, outputs, fee, "")
-	resTx := blockchain.makeTransaction(tx)
+	resTx := tx
 	signTransaction(base.keypairClient.privKey, &resTx)
 
 	base.pendingOutGoingTransactionsMap[resTx.id] = resTx
@@ -151,7 +159,7 @@ func (base Client) postTransaction(outputs map[string]int, fee int) Transaction 
 	base.nonce++
 
 	//this.net.broadcast(Blockchain.POST_TRANSACTION, tx); HOW TO DO THIS???
-	emitter.Emit(blockchain.POST_TRANSACTION(), resTx)
+	base.emitter.Emit(POST_TRANSACTION, resTx)
 
 	return resTx
 }
@@ -167,7 +175,8 @@ func (base Client) postTransaction(outputs map[string]int, fee int) Transaction 
 
 func (base Client) receiveBlock(block Block) (Block, error) {
 	// If the block is a string, then deserialize it.
-	block = deserializeBlock(block, blockchain)
+	// It literally can't be, so this is pointless.
+	// If we want to handle strings, we'll need a new function for that.
 
 	// Ignore the block if it has been received previously.
 	if _, ok := base.blocks[block.getID()]; ok {
@@ -182,9 +191,9 @@ func (base Client) receiveBlock(block Block) (Block, error) {
 
 	// Make sure that we have the previous blocks, unless it is the genesis block.
 	// If we don't have the previous blocks, request the missing blocks and exit.
-	prevBlock := base.blocks[block.prevBlockHash]
+	prevBlock := base.blocks[block.PrevBlockHash]
 	if prevBlock.getID() != "" && !prevBlock.isGenesisBlock() {
-		stuckBlocks := base.pendingBlocks[block.prevBlockHash]
+		stuckBlocks := base.pendingBlocks[block.PrevBlockHash]
 
 		// If this is the first time that we have identified this block as missing,
 		// send out a request for the block.
@@ -205,7 +214,7 @@ func (base Client) receiveBlock(block Block) (Block, error) {
 
 	base.blocks[block.getID()] = block
 
-	if base.lastBlock.chainLength < block.chainLength {
+	if base.lastBlock.ChainLength < block.ChainLength {
 		base.lastBlock = block
 		base.setLastConfirmed()
 	}
@@ -236,11 +245,11 @@ type Message struct {
  * @param {Block} block - The block that is connected to a missing block.
  */
 func (base Client) requestMissingBlock(block Block) {
-	fmt.Print("Asking for missing block %s", block.prevBlockHash)
-	m := Message{base.address, block.prevBlockHash}
+	fmt.Print("Asking for missing block %s", block.PrevBlockHash)
+	m := Message{base.address, block.PrevBlockHash}
 	b, err := json.Marshal(m)
 	if err == nil {
-		emitter.Emit(blockchain.MISSING_BLOCK(), b)
+		base.emitter.Emit(MISSING_BLOCK, b)
 	} else {
 		fmt.Print("Error in JSON encoding in requestMissingBlock()")
 	}
@@ -251,7 +260,7 @@ func (base Client) requestMissingBlock(block Block) {
  */
 func (base Client) resendPendingTransactions() {
 	for _, value := range base.pendingOutGoingTransactionsMap {
-		emitter.Emit(blockchain.POST_TRANSACTION(), value)
+		base.emitter.Emit(POST_TRANSACTION, value)
 	}
 }
 
@@ -271,7 +280,7 @@ func (base Client) provideMissingBlock(msg []byte) {
 		newBlock := base.blocks[message.missing]
 
 		//this.net.sendMessage(msg.from, Blockchain.PROOF_FOUND, block);
-		emitter.Emit(blockchain.PROOF_FOUND(), message.from, newBlock)
+		base.emitter.Emit(PROOF_FOUND, message.from, newBlock)
 	}
 }
 
@@ -282,16 +291,16 @@ func (base Client) provideMissingBlock(msg []byte) {
  */
 func (base Client) setLastConfirmed() {
 	block := base.lastBlock
-	confirmedBlockHeight := block.chainLength - blockchain.getCONFIRMED_DEPTH()
+	confirmedBlockHeight := block.ChainLength - CONFIRMED_DEPTH
 
 	if confirmedBlockHeight < 0 {
 		confirmedBlockHeight = 0
 	}
 
 	//no such thing as while loop in GO
-	for block.chainLength > confirmedBlockHeight {
-		if _, ok := base.blocks[block.prevBlockHash]; ok {
-			block = base.blocks[block.prevBlockHash]
+	for block.ChainLength > confirmedBlockHeight {
+		if _, ok := base.blocks[block.PrevBlockHash]; ok {
+			block = base.blocks[block.PrevBlockHash]
 		}
 	}
 	base.lastConfirmedBlock = block
@@ -307,7 +316,7 @@ func (base Client) setLastConfirmed() {
 func (base Client) showAllBalances() {
 	fmt.Print("Show all balances:")
 
-	for id, balance := range base.lastConfirmedBlock.balances {
+	for id, balance := range base.lastConfirmedBlock.Balances {
 		fmt.Printf("%s: %d", id, balance)
 	}
 }
@@ -326,8 +335,8 @@ func (base Client) showBlockChain() {
 	fmt.Print("BLOCKCHAIN:")
 	for block.getID() != "" {
 		fmt.Printf("%s", block.getID())
-		if _, ok := base.blocks[block.prevBlockHash]; ok {
-			block = base.blocks[block.prevBlockHash]
+		if _, ok := base.blocks[block.PrevBlockHash]; ok {
+			block = base.blocks[block.PrevBlockHash]
 		}
 	}
 }

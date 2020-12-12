@@ -19,7 +19,7 @@ func newFakeNet() *FakeNet {
 
 //Takes in an array of clients to register
 func (base FakeNet) register(clientList []*Client) {
-	fmt.Print(clientList)
+	//fmt.Print(clientList)
 
 	for _, client := range clientList {
 		base.clients[client.address] = client
@@ -33,7 +33,7 @@ func (base FakeNet) register(clientList []*Client) {
  * @param {Object} o - payload of the message
  */
 func (base FakeNet) broadcast(message string, jsonObject []byte) {
-	for address, _ := range base.clients {
+	for address := range base.clients {
 		base.sendMessage(address, message, jsonObject)
 	}
 }
@@ -45,7 +45,7 @@ func (base FakeNet) sendMessage(address string, message string, jsonObject []byt
 	var block Block
 	err := json.Unmarshal(jsonObject, &block)
 	fmt.Printf(`Error code in sendMessage is %s`, err)
-	emitter.Emit(message, block)
+	base.clients[address].emitter.Emit(message, block)
 }
 
 func (base FakeNet) recognizes(client Client) bool {

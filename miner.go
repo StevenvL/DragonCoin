@@ -4,12 +4,10 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
-	"time"
 )
 
 type Miner struct {
 	Client
-	name          string
 	startingBlock Block
 	keypairMiner  keypair
 	miningRounds  int
@@ -19,7 +17,7 @@ type Miner struct {
 func newMiner(name string, keypairMiner keypair, startingBlock Block) *Miner {
 	miner := new(Miner)
 	miner.Client = *newClient(name, keypairMiner, startingBlock)
-	miner.miningRounds = blockchain.NUM_ROUNDS_MINING()
+	miner.miningRounds = NUM_ROUNDS_MINING
 
 	return miner
 }
@@ -29,43 +27,48 @@ func (base Miner) initialize() {
 	base.startNewSearch(set)
 
 	//Not sure if these lines even work
-	fmt.Print("reached here2")
-	emitter.On(blockchain.START_MINING(), base.findProof)
-	emitter.On(blockchain.POST_TRANSACTION(), base.addTransaction)
+	//fmt.Print("reached here2")
+	base.emitter.On(START_MINING, base.findProof)
+	base.emitter.On(POST_TRANSACTION, base.addTransaction)
 
-	time.AfterFunc(0*time.Second, emitStartMining)
+	base.emitStartMining()
+	//fmt.Print("reached here3")
 }
 
-func emitStartMining() {
-	emitter.Emit(blockchain.START_MINING)
+func (base Miner) emitStartMining() {
+	base.emitter.Emit(START_MINING)
 }
 
 //This method creates a new array if empty.
 //Otherwise use specified array
-func (base Miner) startNewSearch(set []Transaction) {
+func (base *Miner) startNewSearch(set []Transaction) {
 	//suppoed to pass this.address and this.miningrounds to it...
-	base.currentBlock = *blockchain.makeEmptyBlock()
+	//fmt.Println("MINER.GO LINE 47")
+	//fmt.Println(base.Client.lastBlock)
+	base.currentBlock = *base.Client.lastBlock.makeBlock(base.Client.address)
+	//fmt.Println(base.currentBlock)
 
 	for _, tx := range set {
 		base.addTransaction(tx)
 	}
 
-	base.currentBlock.proof = 0
+	base.currentBlock.Proof = 0
 }
 
-func (base Miner) findProof() {
-	pausePoint := base.currentBlock.proof + base.miningRounds
+func (base *Miner) findProof() {
+	pausePoint := base.currentBlock.Proof + base.miningRounds
 
-	for base.currentBlock.proof < pausePoint {
+	for base.currentBlock.Proof < pausePoint {
+		//fmt.Println(base.currentBlock)
 		if base.currentBlock.hasValidProof() == true {
-			fmt.Printf("Found proof for block %d: %s", base.currentBlock.chainLength, base.currentBlock.proof)
+			fmt.Printf("Found proof for block %d: %s", base.currentBlock.ChainLength, base.currentBlock.Proof)
 			base.announceProof()
 			base.receiveBlock(base.currentBlock)
 			var set []Transaction
 			base.startNewSearch(set)
 			break
 		}
-		base.currentBlock.proof++
+		base.currentBlock.Proof++
 	}
 	/*
 			USED FOR TESTING PURPOSES, not sure if we have to port.
@@ -75,9 +78,12 @@ func (base Miner) findProof() {
 				setTimeout(() => this.emit(Blockchain.START_MINING), 0);
 			  }
 	*/
+	//time.AfterFunc(1*time.Second, base.emitStartMining)
+	base.emitStartMining()
+
 }
 func (base Miner) addTransaction(tx Transaction) bool {
-	tx = blockchain.makeTransaction(tx)
+	//tx = base.Client.blockchain.makeTransaction(tx)
 	//supposed to do client.print but its whatever.
 	return base.currentBlock.addTransaction(tx)
 }
@@ -93,7 +99,7 @@ func (base Miner) receiveBlock(block Block) error {
 		return errors.New("Invalid block")
 	}
 
-	if base.currentBlock.getID() != "" && b.chainLength >= base.currentBlock.chainLength {
+	if base.currentBlock.getID() != "" && b.ChainLength >= base.currentBlock.ChainLength {
 		fmt.Print("Cutting over to new chain")
 		txSet := base.syncTransactions(b)
 		base.startNewSearch(txSet)
@@ -107,10 +113,10 @@ func (base Miner) syncTransactions(nb Block) []Transaction {
 	var cbTxs []Transaction
 	var nbTxs []Transaction
 
-	for nb.chainLength > cb.chainLength {
-		for _, element := range nb.transactions {
+	for nb.ChainLength > cb.ChainLength {
+		for _, element := range nb.Transactions {
 			nbTxs = append(nbTxs, element)
-			nb = base.blocks[nb.prevBlockHash]
+			nb = base.blocks[nb.PrevBlockHash]
 			if nb.getID() == "" {
 				fmt.Print("no result found in map")
 			}
@@ -118,15 +124,15 @@ func (base Miner) syncTransactions(nb Block) []Transaction {
 	}
 
 	for cb.getID() != "" && cb.getID() != nb.getID() {
-		for _, element := range cb.transactions {
+		for _, element := range cb.Transactions {
 			cbTxs = append(cbTxs, element)
 		}
-		for _, element := range nb.transactions {
+		for _, element := range nb.Transactions {
 			nbTxs = append(nbTxs, element)
 		}
 
-		cb = base.blocks[cb.prevBlockHash]
-		nb = base.blocks[nb.prevBlockHash]
+		cb = base.blocks[cb.PrevBlockHash]
+		nb = base.blocks[nb.PrevBlockHash]
 	}
 
 	for _, element := range nbTxs {
@@ -160,6 +166,6 @@ func indexOf(transaction Transaction, list []Transaction) int {
 //map[string]int
 //Usually amounts and address
 func (base Miner) postTransaction(outputs map[string]int) bool {
-	tx := base.Client.postTransaction(outputs, blockchain.getDEFAULT_TX_FEE())
+	tx := base.Client.postTransaction(outputs, DEFAULT_TX_FEE)
 	return base.addTransaction(tx)
 }

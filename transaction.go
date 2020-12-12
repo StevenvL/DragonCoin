@@ -109,7 +109,7 @@ func validSignatureTransaction(transaction Transaction) bool {
  *    according to the balances from the specified block.
  */
 func (base Transaction) sufficientFunds(block Block) bool {
-	blockBalanceMap := block.balances
+	blockBalanceMap := block.Balances
 	blockValue := blockBalanceMap[base.from]
 	return base.totalOutputs() <= blockValue
 }

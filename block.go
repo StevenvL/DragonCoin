@@ -12,17 +12,17 @@ import (
  */
 
 type Block struct {
-	notEmpty       bool
-	prevBlockHash  string
-	target         *big.Int
-	transactions   map[string]Transaction
-	balances       map[string]int
-	nextNonce      map[string]int
-	chainLength    int
-	timestamp      string
-	rewardAddr     string
-	coinbaseReward int
-	proof          int
+	NotEmpty       bool
+	PrevBlockHash  string
+	Target         *big.Int
+	Transactions   map[string]Transaction
+	Balances       map[string]int
+	NextNonce      map[string]int
+	ChainLength    int
+	Timestamp      string
+	RewardAddr     string
+	CoinbaseReward int
+	Proof          int
 }
 
 /**
@@ -37,28 +37,23 @@ type Block struct {
  * @param {Number} [coinbaseReward] - The gold that a miner earns for finding a block proof.
  * blockChain BlockChain, target=Blockchain.powTarget, coinbaseReward=Blockchain.cfg.coinBase, rewardAddr, prevBlock
  */
-func (base Block) newBlock(blockChain BlockChain, rewardAddr string, prevBlock ...Block) *Block {
+func (base Block) makeBlock(rewardAddr string) *Block {
 	block := new(Block)
-	block.target = blockChain.cfg.powTarget
-	block.coinbaseReward = blockChain.coinbaseAmount
-	block.balances = make(map[string]int)
-	block.transactions = make(map[string]Transaction)
-	block.nextNonce = make(map[string]int)
-	block.chainLength = 0
-	block.rewardAddr = rewardAddr
-	block.notEmpty = true
+	block.Target = base.Target
+	block.CoinbaseReward = base.CoinbaseReward
+	block.Balances = make(map[string]int)
+	block.Transactions = make(map[string]Transaction)
+	block.NextNonce = make(map[string]int)
+	block.ChainLength = 0
+	block.RewardAddr = rewardAddr
+	block.NotEmpty = true
 
-	for argNum, arg := range prevBlock {
-		switch argNum {
-		case 0:
-			block.prevBlockHash = arg.hashVal()
-			block.balances = arg.balances
-			block.nextNonce = arg.nextNonce
-			block.chainLength = arg.chainLength + 1
-			if arg.rewardAddr != "" {
-				block.balances[arg.rewardAddr] += arg.totalRewards()
-			}
-		}
+	block.PrevBlockHash = base.hashVal()
+	block.Balances = base.Balances
+	block.NextNonce = base.NextNonce
+	block.ChainLength = base.ChainLength + 1
+	if base.RewardAddr != "" {
+		block.Balances[base.RewardAddr] += base.totalRewards()
 	}
 
 	// Adding toJSON methods for transactions and balances, which help with
@@ -81,13 +76,14 @@ func (base Block) newBlock(blockChain BlockChain, rewardAddr string, prevBlock .
 
 func (base Block) emptyBlock(blockChain BlockChain) *Block {
 	block := new(Block)
-	block.target = blockChain.cfg.powTarget
-	block.coinbaseReward = blockChain.coinbaseAmount
-	block.balances = make(map[string]int)
-	block.transactions = make(map[string]Transaction)
-	block.nextNonce = make(map[string]int)
-	block.chainLength = 0
-	block.notEmpty = true
+	//fmt.Println(blockChain)
+	block.Target = blockChain.cfg.powTarget
+	block.CoinbaseReward = blockChain.coinbaseAmount
+	block.Balances = make(map[string]int)
+	block.Transactions = make(map[string]Transaction)
+	block.NextNonce = make(map[string]int)
+	block.ChainLength = 0
+	block.NotEmpty = true
 	return block
 }
 
@@ -97,7 +93,7 @@ func (base Block) emptyBlock(blockChain BlockChain) *Block {
  * @returns {Boolean} - True if this is the first block in the chain.
  */
 func (base Block) isGenesisBlock() bool {
-	return base.chainLength == 0
+	return base.ChainLength == 0
 }
 
 /**
@@ -108,12 +104,17 @@ func (base Block) isGenesisBlock() bool {
  */
 func (base Block) hasValidProof() bool {
 	h := sha256hash(base.serialize())
+	fmt.Println(base.serialize())
+	//fmt.Println(h)
 	n := big.NewInt(0)
 	if _, ok := n.SetString(h, 16); ok {
 	} else {
 		fmt.Printf("rip")
 	}
-	return n.Cmp(base.target) < 0
+	//fmt.Println("BLOCK.GO LINE 112")
+	//fmt.Println(n)
+	//fmt.Println(base.target)
+	return n.Cmp(base.Target) < 0
 }
 
 /**
@@ -123,7 +124,9 @@ func (base Block) hasValidProof() bool {
  * @returns {String} - The block in JSON format.
  */
 func (base Block) serialize() string {
+	//fmt.Println(base)
 	b, _ := json.Marshal(base)
+	//fmt.Println(string(b))
 	return string(b)
 	//return JSON.stringify(this);
 	//if (this.isGenesisBlock()) {
@@ -214,7 +217,7 @@ func (base Block) getID() string {
  * @returns {Boolean} - True if the transaction was added successfully.
  */
 func (base Block) addTransaction(tx Transaction) bool {
-	if _, dupped := base.transactions[tx.id]; dupped {
+	if _, dupped := base.Transactions[tx.id]; dupped {
 		fmt.Printf(`Duplicate transaction ${tx.id}.`)
 		return false
 	}
@@ -231,7 +234,7 @@ func (base Block) addTransaction(tx Transaction) bool {
 
 	// Checking and updating nonce value.
 	// This portion prevents replay attacks.
-	nonce := base.nextNonce[tx.from]
+	nonce := base.NextNonce[tx.from]
 	if tx.nonce < nonce {
 		fmt.Printf(`Replayed transaction ${tx.id}.`)
 		return false
@@ -240,20 +243,20 @@ func (base Block) addTransaction(tx Transaction) bool {
 		fmt.Printf(`Out of order transaction ${tx.id}.`)
 		return false
 	} else {
-		base.nextNonce[tx.from] = nonce + 1
+		base.NextNonce[tx.from] = nonce + 1
 	}
 
 	// Adding the transaction to the block
-	base.transactions[tx.id] = tx
+	base.Transactions[tx.id] = tx
 
 	// Taking gold from the sender
 	senderBalance := base.balanceOf(tx.from)
-	base.balances[tx.from] = senderBalance - tx.totalOutputs()
+	base.Balances[tx.from] = senderBalance - tx.totalOutputs()
 
 	// Giving gold to the specified output addresses
 	for address, amount := range tx.outputs {
 		oldBalance := base.balanceOf(address)
-		base.balances[address] = amount + oldBalance
+		base.Balances[address] = amount + oldBalance
 	}
 
 	return true
@@ -272,18 +275,18 @@ func (base Block) addTransaction(tx Transaction) bool {
  */
 func (base Block) rerun(prevBlock Block) bool {
 	// Setting balances to the previous block's balances.
-	base.balances = prevBlock.balances
-	base.nextNonce = prevBlock.nextNonce
+	base.Balances = prevBlock.Balances
+	base.NextNonce = prevBlock.NextNonce
 
 	// Adding coinbase reward for prevBlock.
-	winnerBalance := base.balanceOf(prevBlock.rewardAddr)
-	if prevBlock.rewardAddr != "" {
-		base.balances[prevBlock.rewardAddr] = winnerBalance + prevBlock.totalRewards()
+	winnerBalance := base.balanceOf(prevBlock.RewardAddr)
+	if prevBlock.RewardAddr != "" {
+		base.Balances[prevBlock.RewardAddr] = winnerBalance + prevBlock.totalRewards()
 	}
 
 	// Re-adding all transactions.
-	txs := base.transactions
-	base.transactions = make(map[string]Transaction)
+	txs := base.Transactions
+	base.Transactions = make(map[string]Transaction)
 	for _, tx := range txs {
 		success := base.addTransaction(tx)
 		if !success {
@@ -305,7 +308,7 @@ func (base Block) rerun(prevBlock Block) bool {
  * @returns {Number} - The available gold for the specified user.
  */
 func (base Block) balanceOf(addr string) int {
-	return base.balances[addr]
+	return base.Balances[addr]
 }
 
 /**
@@ -317,8 +320,8 @@ func (base Block) balanceOf(addr string) int {
  *
  */
 func (base Block) totalRewards() int {
-	reward := base.coinbaseReward
-	for _, tx := range base.transactions {
+	reward := base.CoinbaseReward
+	for _, tx := range base.Transactions {
 		reward += tx.fee
 	}
 	return reward
@@ -334,7 +337,7 @@ func (base Block) totalRewards() int {
  * @returns {boolean} - True if the transaction is contained in this block.
  */
 func (base Block) contains(tx Transaction) bool {
-	if _, ok := base.transactions[tx.id]; ok {
+	if _, ok := base.Transactions[tx.id]; ok {
 		return true
 	} else {
 		return false

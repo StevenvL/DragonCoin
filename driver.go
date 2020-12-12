@@ -62,7 +62,7 @@ func main() {
 	// Showing the initial balances from Alice's perspective, for no particular reason.
 	fmt.Println("Initial balances:")
 	showBalances(*alice)
-
+	//fmt.Println(alice.availableGold())
 	clientList := []*Client{alice, bob, charlie, &minnie.Client, &mickey.Client}
 	fakeNet.register(clientList)
 
@@ -71,8 +71,14 @@ func main() {
 	mickey.initialize()
 
 	// Alice transfers some money to Bob.
+
 	fmt.Printf("Alice is transfering 40 gold to %v\n", bob.address)
-	alice.postTransaction(map[string]int{bob.address: 40}, blockchain.getDEFAULT_TX_FEE())
+	alice.postTransaction(map[string]int{bob.address: 40}, DEFAULT_TX_FEE)
+	showBalances(*alice)
+	showBalances(*bob)
+	showBalances(*charlie)
+	showBalances(minnie.Client)
+	//showBalances(mickey.Client)
 
 	/*
 	  setTimeout(() => {
@@ -84,6 +90,8 @@ func main() {
 	  }, 2000)
 	*/
 
+	//time.AfterFunc(10*time.Second, endSimulation)
+	//time.Sleep(11 * time.Second)
 	/*
 	  // Print out the final balances after it has been running for some time.
 	  setTimeout(() => {
@@ -111,4 +119,8 @@ func main() {
 	    process.exit(0)
 	  }, 5000)
 	*/
+}
+
+func endSimulation() {
+	fmt.Println("Simulation ended")
 }

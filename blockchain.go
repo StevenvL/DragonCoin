@@ -4,7 +4,6 @@ package main
 import (
 	"fmt"
 	"math/big"
-	"reflect"
 )
 
 // Network message constants
@@ -54,7 +53,7 @@ type BlockChaincfg struct {
 }
 
 type BlockChain struct {
-	blockClass       Block
+	//blockClass       Block
 	cfg              *BlockChaincfg
 	transactionClass Transaction
 	powLeadingZeroes uint
@@ -92,6 +91,7 @@ func makeGenesis(blockClass Block, transactionClass Transaction, clientBalanceMa
 		fmt.Printf("rip")
 	}
 	blockchain.cfg.powTarget = POW_BASE_TARGET.Rsh(POW_BASE_TARGET, POW_LEADING_ZEROES)
+	//fmt.Println(blockchain.cfg.powTarget)
 
 	// If startingBalances was specified, we initialize our balances to that object.
 	//BlockChain.balances = startingBalances //|| {};
@@ -103,12 +103,12 @@ func makeGenesis(blockClass Block, transactionClass Transaction, clientBalanceMa
 			balances[client.address] = balance;
 		  }
 		}*/
-
+	//fmt.Printf("%+v\n", blockchain.cfg)
 	g := blockchain.makeEmptyBlock()
 
 	// Initializing starting balances in the genesis block.
 	for address, balance := range clientBalanceMap {
-		g.balances[address] = balance
+		g.Balances[address] = balance
 	}
 
 	// If clientBalanceMap was specified, we set the genesis block for every client.
@@ -127,7 +127,7 @@ func makeGenesis(blockClass Block, transactionClass Transaction, clientBalanceMa
  *
  * @returns {Block}
  */
-func deserializeBlock(o Block, blockchain *BlockChain) Block {
+func deserializeBlock(o Block) Block {
 	//if reflect.TypeOf(o) == reflect.TypeOf(blockchain.cfg.blockClass) {
 	return o
 	//}
@@ -161,23 +161,23 @@ func deserializeBlock(o Block, blockchain *BlockChain) Block {
 	*/
 }
 
-func (blockchain BlockChain) makeEmptyBlock() *Block {
-	return blockchain.cfg.blockClass.emptyBlock(blockchain)
+func (blockchain *BlockChain) makeEmptyBlock() *Block {
+	//fmt.Printf("%+v\n", blockchain.cfg)
+	return blockchain.cfg.blockClass.emptyBlock(*blockchain)
 }
 
-func (blockchain BlockChain) makeNewBlock(rewardAddr string, prevBlock ...Block) *Block {
-	return blockchain.cfg.blockClass.newBlock(blockchain, rewardAddr, prevBlock[0])
-}
-
+/* This function is useless.
 func (blockchain BlockChain) makeTransaction(o Transaction) Transaction {
 	if reflect.TypeOf(o) == reflect.TypeOf(blockchain.cfg.transactionClass) {
 		return o
 	} /*else { //CAN't HANDLE ANONYMOUS OBJECTS
 		return blockchain.cfg.transactionClass.newTransaction(o)
-	}*/
+	}
 	return o
 
-}
+}*/
+/*
+These are all useless, everything here is publically available.
 
 func (blockchain BlockChain) getPOW_TARGET() *big.Int {
 	return blockchain.cfg.powTarget
@@ -211,3 +211,4 @@ func (blockchain BlockChain) START_MINING() string {
 func (blockchain BlockChain) NUM_ROUNDS_MINING() int {
 	return NUM_ROUNDS_MINING
 }
+*/
