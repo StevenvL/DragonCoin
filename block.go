@@ -12,6 +12,7 @@ import (
  */
 
 type Block struct {
+	notEmpty       bool
 	prevBlockHash  string
 	target         *big.Int
 	transactions   map[string]Transaction
@@ -45,6 +46,7 @@ func (base Block) newBlock(blockChain BlockChain, rewardAddr string, prevBlock .
 	block.nextNonce = make(map[string]int)
 	block.chainLength = 0
 	block.rewardAddr = rewardAddr
+	block.notEmpty = true
 
 	for argNum, arg := range prevBlock {
 		switch argNum {
@@ -79,6 +81,10 @@ func (base Block) newBlock(blockChain BlockChain, rewardAddr string, prevBlock .
 
 func (base Block) emptyBlock() *Block {
 	block := new(Block)
+	block.balances = make(map[string]int)
+	block.transactions = make(map[string]Transaction)
+	block.nextNonce = make(map[string]int)
+	block.notEmpty = true
 	return block
 }
 

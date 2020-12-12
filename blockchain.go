@@ -75,7 +75,7 @@ func newBlockchain() *BlockChain {
 	return blockchain
 }
 
-func makeGenesis(blockClass Block, transactionClass Transaction, clientBalanceMap map[string]int, clientAddrMap map[string]Client, blockchain *BlockChain) *Block {
+func makeGenesis(blockClass Block, transactionClass Transaction, clientBalanceMap map[string]int, clientAddrMap map[string]*Client, blockchain *BlockChain) *Block {
 
 	//if (clientBalanceMap && startingBalances) {
 	//  throw new Error("You may set clientBalanceMap OR set startingBalances, but not both.");

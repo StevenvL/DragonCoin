@@ -18,7 +18,6 @@ type Client struct {
 	nonce                          int
 	pendingOutGoingTransactionsMap map[string]Transaction
 	pendingReceivedTransactionsMap map[string]Transaction
-	startingBlock                  Block
 	address                        string
 	blocks                         map[string]Block
 	pendingBlocks                  map[string]Block
@@ -30,7 +29,7 @@ func newClient(name string, keypairClient keypair, startingBlock Block) *Client 
 	client := new(Client)
 	client.name = name
 
-	if keypairClient.pubKey.N.String() == "" {
+	if keypairClient.pubKey.N == nil {
 		client.keypairClient = generateKeypair()
 	} else {
 		client.keypairClient = keypairClient
@@ -46,7 +45,7 @@ func newClient(name string, keypairClient keypair, startingBlock Block) *Client 
 	client.blocks = make(map[string]Block)
 	client.pendingBlocks = make(map[string]Block)
 
-	if startingBlock.getID() != "" {
+	if startingBlock.notEmpty {
 		client.setGenesisBlock(startingBlock)
 	}
 
@@ -62,15 +61,17 @@ func newClient(name string, keypairClient keypair, startingBlock Block) *Client 
  *
  * @param {Block} startingBlock - The genesis block of the blockchain.
  */
-func (base Client) setGenesisBlock(startingBlock Block) {
-	if base.lastBlock.getID() != "" {
+func (base *Client) setGenesisBlock(startingBlock Block) {
+	if base.lastBlock.notEmpty {
 		fmt.Print("ERROR!, Cannot set genesis block for existing blockchain")
 	} else {
 
+		//fmt.Println(startingBlock)
 		// Transactions from this block or older are assumed to be confirmed,
 		// and therefore are spendable by the client. The transactions could
 		// roll back, but it is unlikely.
 		base.lastConfirmedBlock = startingBlock
+		//fmt.Println(base.lastConfirmedBlock)
 
 		// The last block seen.  Any transactions after lastConfirmedBlock
 		// up to lastBlock are considered pending.
@@ -78,6 +79,12 @@ func (base Client) setGenesisBlock(startingBlock Block) {
 
 		base.blocks[startingBlock.getID()] = startingBlock
 	}
+}
+
+func (base *Client) testSet(testBlock Block) {
+	//fmt.Println(base.lastBlock)
+	base.lastBlock = testBlock
+	//fmt.Println(base.lastBlock)
 }
 
 /**

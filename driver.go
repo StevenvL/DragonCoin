@@ -13,6 +13,7 @@ func main() {
 	emptyKeys := keypair{}
 	emptyBlock := Block{}
 	emptyTransaction := Transaction{}
+	//fmt.Println(emptyBlock.empty)
 	alice := newClient("Alice", emptyKeys, emptyBlock)
 	bob := newClient("Bob", emptyKeys, emptyBlock)
 	charlie := newClient("Charlie", emptyKeys, emptyBlock)
@@ -23,8 +24,14 @@ func main() {
 
 	// Creating genesis block
 	blockchain := newBlockchain()
-	balanceMap := map[string]int{alice.address: 233, bob.address: 99, charlie.address: 67, minnie.Client.address: 400, mickey.Client.address: 300}
-	addrMap := map[string]Client{alice.address: *alice, bob.address: *bob, charlie.address: *charlie, minnie.Client.address: minnie.Client, mickey.Client.address: mickey.Client}
+	balanceMap := map[string]int{
+		alice.address:         233,
+		bob.address:           99,
+		charlie.address:       67,
+		minnie.Client.address: 400,
+		mickey.Client.address: 300,
+	}
+	addrMap := map[string]*Client{alice.address: alice, bob.address: bob, charlie.address: charlie, minnie.Client.address: &minnie.Client, mickey.Client.address: &mickey.Client}
 	genesis := makeGenesis(
 		emptyBlock,
 		emptyTransaction,
@@ -32,11 +39,25 @@ func main() {
 		addrMap,
 		blockchain,
 	)
+	//fmt.Println(balanceMap)
+	//fmt.Printf("%+v\n", genesis)
+	//fmt.Printf("%+v\n", alice)
+	//alice.setGenesisBlock(*genesis)
+	//fmt.Println(alice.lastBlock)
 
 	// Late miner - Donald has more mining power, represented by the miningRounds.
 	// (Mickey and Minnie have the default of 2000 rounds).
 	donald := newMiner("Donald", emptyKeys, *genesis)
 	donald.miningRounds = 3000
+
+	showBalances := func(client Client) {
+		fmt.Printf("Alice has  %v gold.\n", client.lastBlock.balanceOf(alice.address))
+		fmt.Printf("Bob has  %v gold.\n", client.lastBlock.balanceOf(bob.address))
+		fmt.Printf("Charlie has  %v gold.\n", client.lastBlock.balanceOf(charlie.address))
+		fmt.Printf("Minnie has  %v gold.\n", client.lastBlock.balanceOf(minnie.address))
+		fmt.Printf("Mickey has %v gold.\n", client.lastBlock.balanceOf(mickey.address))
+		fmt.Printf("Donald has %v gold.\n", client.lastBlock.balanceOf(donald.address))
+	}
 
 	// Showing the initial balances from Alice's perspective, for no particular reason.
 	fmt.Println("Initial balances:")
@@ -50,7 +71,7 @@ func main() {
 	mickey.initialize()
 
 	// Alice transfers some money to Bob.
-	fmt.Println(`Alice is transfering 40 gold to ${bob.address}`)
+	fmt.Printf("Alice is transfering 40 gold to %v\n", bob.address)
 	alice.postTransaction(map[string]int{bob.address: 40}, blockchain.getDEFAULT_TX_FEE())
 
 	/*
@@ -90,12 +111,4 @@ func main() {
 	    process.exit(0)
 	  }, 5000)
 	*/
-}
-func showBalances(client Client) {
-	fmt.Println(`Alice has ${client.lastBlock.balanceOf(alice.address)} gold.`)
-	fmt.Println(`Bob has ${client.lastBlock.balanceOf(bob.address)} gold.`)
-	fmt.Println(`Charlie has ${client.lastBlock.balanceOf(charlie.address)} gold.`)
-	fmt.Println(`Minnie has ${client.lastBlock.balanceOf(minnie.address)} gold.`)
-	fmt.Println(`Mickey has ${client.lastBlock.balanceOf(mickey.address)} gold.`)
-	fmt.Println(`Donald has ${client.lastBlock.balanceOf(donald.address)} gold.`)
 }
