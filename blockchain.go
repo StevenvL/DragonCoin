@@ -162,7 +162,11 @@ func deserializeBlock(o Block, blockchain *BlockChain) Block {
 }
 
 func (blockchain BlockChain) makeEmptyBlock() *Block {
-	return blockchain.cfg.blockClass.emptyBlock()
+	return blockchain.cfg.blockClass.emptyBlock(blockchain)
+}
+
+func (blockchain BlockChain) makeNewBlock(rewardAddr string, prevBlock ...Block) *Block {
+	return blockchain.cfg.blockClass.newBlock(blockchain, rewardAddr, prevBlock[0])
 }
 
 func (blockchain BlockChain) makeTransaction(o Transaction) Transaction {

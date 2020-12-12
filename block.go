@@ -79,11 +79,14 @@ func (base Block) newBlock(blockChain BlockChain, rewardAddr string, prevBlock .
 	return block
 }
 
-func (base Block) emptyBlock() *Block {
+func (base Block) emptyBlock(blockChain BlockChain) *Block {
 	block := new(Block)
+	block.target = blockChain.cfg.powTarget
+	block.coinbaseReward = blockChain.coinbaseAmount
 	block.balances = make(map[string]int)
 	block.transactions = make(map[string]Transaction)
 	block.nextNonce = make(map[string]int)
+	block.chainLength = 0
 	block.notEmpty = true
 	return block
 }
