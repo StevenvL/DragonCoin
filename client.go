@@ -25,13 +25,14 @@ type Client struct {
 	lastBlock                      Block
 	lastConfirmedBlock             Block
 	emitter                        *emission.Emitter
+	fakeNet                        *FakeNet
 }
 
 func (base Client) String() string {
 	return fmt.Sprintf("Name: %s, Address: %s\n", base.name, base.address)
 }
 
-func newClient(name string, keypairClient keypair, startingBlock Block) *Client {
+func newClient(name string, keypairClient keypair, startingBlock Block, fakeNet *FakeNet) *Client {
 	client := new(Client)
 	client.name = name
 
@@ -58,6 +59,7 @@ func newClient(name string, keypairClient keypair, startingBlock Block) *Client 
 	}
 
 	client.emitter = emission.NewEmitter()
+	client.fakeNet = fakeNet
 
 	client.emitter.On(PROOF_FOUND, client.receiveBlock)
 	client.emitter.On(MISSING_BLOCK, client.provideMissingBlock)

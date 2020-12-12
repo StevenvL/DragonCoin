@@ -14,13 +14,13 @@ func main() {
 	emptyBlock := Block{}
 	emptyTransaction := Transaction{}
 	//fmt.Println(emptyBlock.empty)
-	alice := newClient("Alice", emptyKeys, emptyBlock)
-	bob := newClient("Bob", emptyKeys, emptyBlock)
-	charlie := newClient("Charlie", emptyKeys, emptyBlock)
+	alice := newClient("Alice", emptyKeys, emptyBlock, fakeNet)
+	bob := newClient("Bob", emptyKeys, emptyBlock, fakeNet)
+	charlie := newClient("Charlie", emptyKeys, emptyBlock, fakeNet)
 
 	// Miners
-	minnie := newMiner("Minnie", emptyKeys, emptyBlock)
-	mickey := newMiner("Mickey", emptyKeys, emptyBlock)
+	minnie := newMiner("Minnie", emptyKeys, emptyBlock, fakeNet)
+	mickey := newMiner("Mickey", emptyKeys, emptyBlock, fakeNet)
 
 	// Creating genesis block
 	blockchain := newBlockchain()
@@ -47,7 +47,7 @@ func main() {
 
 	// Late miner - Donald has more mining power, represented by the miningRounds.
 	// (Mickey and Minnie have the default of 2000 rounds).
-	donald := newMiner("Donald", emptyKeys, *genesis)
+	donald := newMiner("Donald", emptyKeys, *genesis, fakeNet)
 	donald.miningRounds = 3000
 
 	showBalances := func(client Client) {

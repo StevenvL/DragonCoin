@@ -44,7 +44,9 @@ func (base FakeNet) sendMessage(address string, message string, jsonObject []byt
 	//curClient := base.clients[address]
 	var block Block
 	err := json.Unmarshal(jsonObject, &block)
-	fmt.Printf(`Error code in sendMessage is %s`, err)
+	if err != nil {
+		fmt.Printf(`Error code in sendMessage is %s`, err)
+	}
 	base.clients[address].emitter.Emit(message, block)
 }
 

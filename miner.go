@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"reflect"
@@ -14,9 +15,9 @@ type Miner struct {
 	currentBlock  *Block
 }
 
-func newMiner(name string, keypairMiner keypair, startingBlock Block) *Miner {
+func newMiner(name string, keypairMiner keypair, startingBlock Block, fakeNet *FakeNet) *Miner {
 	miner := new(Miner)
-	miner.Client = *newClient(name, keypairMiner, startingBlock)
+	miner.Client = *newClient(name, keypairMiner, startingBlock, fakeNet)
 	miner.miningRounds = NUM_ROUNDS_MINING
 
 	return miner
@@ -61,7 +62,7 @@ func (base *Miner) findProof() {
 	for base.currentBlock.Proof < pausePoint {
 		//fmt.Println(base.currentBlock)
 		if base.currentBlock.hasValidProof() == true {
-			fmt.Printf("Found proof for block %d: %s", base.currentBlock.ChainLength, base.currentBlock.Proof)
+			fmt.Printf("%s Found proof for block %d: %s", base.Client.name, base.currentBlock.ChainLength, base.currentBlock.Proof)
 			base.announceProof()
 			base.receiveBlock(base.currentBlock)
 			var set []Transaction
@@ -89,7 +90,8 @@ func (base Miner) addTransaction(tx Transaction) bool {
 }
 
 func (base Miner) announceProof() {
-	//this.net.broadcast(Blockchain.PROOF_FOUND, this.currentBlock);
+	blockJSON, _ := json.Marshal(*base.currentBlock)
+	base.Client.fakeNet.broadcast(PROOF_FOUND, blockJSON)
 }
 
 func (base Miner) receiveBlock(block *Block) error {
