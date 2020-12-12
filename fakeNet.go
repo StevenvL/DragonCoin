@@ -8,17 +8,17 @@ import (
 
 //Map of client address to client obj
 type FakeNet struct {
-	clients map[string]Client
+	clients map[string]*Client
 }
 
 func newFakeNet() *FakeNet {
 	fakeNet := new(FakeNet)
-	fakeNet.clients = make(map[string]Client)
+	fakeNet.clients = make(map[string]*Client)
 	return fakeNet
 }
 
 //Takes in an array of clients to register
-func (base FakeNet) register(clientList []Client) {
+func (base FakeNet) register(clientList []*Client) {
 	fmt.Print(clientList)
 
 	for _, client := range clientList {

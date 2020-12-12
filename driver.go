@@ -7,7 +7,7 @@ import (
 func main() {
 	fmt.Println("Starting simulation.  This may take a moment...")
 
-	var fakeNet = new(FakeNet)
+	fakeNet := newFakeNet()
 
 	// Clients
 	emptyKeys := keypair{}
@@ -63,7 +63,7 @@ func main() {
 	fmt.Println("Initial balances:")
 	showBalances(*alice)
 
-	clientList := []Client{*alice, *bob, *charlie, minnie.Client, mickey.Client}
+	clientList := []*Client{alice, bob, charlie, &minnie.Client, &mickey.Client}
 	fakeNet.register(clientList)
 
 	// Miners start mining.
