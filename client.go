@@ -25,6 +25,10 @@ type Client struct {
 	lastConfirmedBlock             Block
 }
 
+func (base Client) String() string {
+	return fmt.Sprintf("Name: %s, Address: %s\n", base.name, base.address)
+}
+
 func newClient(name string, keypairClient keypair, startingBlock Block) *Client {
 	client := new(Client)
 	client.name = name
