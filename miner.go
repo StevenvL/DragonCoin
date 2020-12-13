@@ -50,10 +50,14 @@ func (base *Miner) startNewSearch(set []Transaction) {
 	//suppoed to pass this.address and this.miningrounds to it...
 	fmt.Println("MINER.GO LINE 47")
 	//fmt.Println(&base.currentBlock)
-	//fmt.Printf("%+v", base.Client.lastBlock)
-	*base.currentBlock = base.Client.lastBlock.makeBlock(base.Client.address)
-	fmt.Println(base.currentBlock)
-	//fmt.Printf("%+v", base.Client.lastBlock)
+	fmt.Printf("%+v\n\n", base.Client.lastBlock)
+	//fmt.Printf("%p\n\n", &base.currentBlock)
+	//fmt.Printf("%p\n\n", &base.Client.lastBlock)
+	base.currentBlock = base.Client.lastBlock.makeBlock(base.Client.address)
+	//fmt.Println(base.currentBlock)
+	//fmt.Printf("%p\n\n", &base.currentBlock)
+	//fmt.Printf("%p\n\n", &base.Client.lastBlock)
+	fmt.Printf("%+v\n\n", base.Client.lastBlock)
 	fmt.Println(base.currentBlock.getID())
 
 	for _, tx := range set {

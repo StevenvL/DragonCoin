@@ -37,7 +37,7 @@ type Block struct {
  * @param {Number} [coinbaseReward] - The gold that a miner earns for finding a block proof.
  * blockChain BlockChain, target=Blockchain.powTarget, coinbaseReward=Blockchain.cfg.coinBase, rewardAddr, prevBlock
  */
-func (base Block) makeBlock(rewardAddr string) Block {
+func (base Block) makeBlock(rewardAddr string) *Block {
 	block := new(Block)
 	block.Target = base.Target
 	block.CoinbaseReward = base.CoinbaseReward
@@ -48,9 +48,13 @@ func (base Block) makeBlock(rewardAddr string) Block {
 	block.NotEmpty = true
 
 	block.PrevBlockHash = base.hashVal()
-	block.Balances = base.Balances
-	block.NextNonce = base.NextNonce
-	block.ChainLength = base.ChainLength + 1
+	for key, value := range base.Balances {
+		block.Balances[key] = value
+	}
+	for key, value := range base.NextNonce {
+		block.NextNonce[key] = value
+	}
+	block.ChainLength = 1 + base.ChainLength
 
 	if base.RewardAddr != "" {
 		block.Balances[base.RewardAddr] += base.totalRewards()
