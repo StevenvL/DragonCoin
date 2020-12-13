@@ -55,6 +55,8 @@ func (base *Miner) startNewSearch(set []Transaction) {
 	//fmt.Printf("%p\n\n", &base.currentBlock)
 	//fmt.Printf("%p\n\n", &base.Client.lastBlock)
 	base.currentBlock = base.Client.lastBlock.makeBlock(base.Client.address)
+	//fmt.Println(base.currentBlock.ChainLength)
+	//fmt.Printf("BLOCK FROM START%+v\n\n", base.currentBlock)
 	//fmt.Println(base.currentBlock)
 	//fmt.Printf("%p\n\n", &base.currentBlock)
 	//fmt.Printf("%p\n\n", &base.Client.lastBlock)
@@ -108,8 +110,8 @@ func (base Miner) announceProof() {
 	base.Client.fakeNet.broadcast(PROOF_FOUND, blockJSON)
 }
 
-func (base Miner) receiveBlock(block Block) error {
-	//fmt.Println(base.Client.lastBlock)
+func (base *Miner) receiveBlock(block Block) error {
+	//fmt.Printf("BLOCK FROM RECIEVE%+v\n\n", base.currentBlock)
 	//fmt.Println()
 	//fmt.Println(*block)
 	b, err := base.Client.receiveBlock(block)
@@ -121,7 +123,7 @@ func (base Miner) receiveBlock(block Block) error {
 		return errors.New("Invalid block")
 	} else if base.currentBlock.NotEmpty && b.ChainLength >= base.currentBlock.ChainLength {
 		//fmt.Printf("%v is cutting despite encountering %v\n", base.Client.name, err)
-		fmt.Printf("%v: Cutting over to new chain\n", base.Client.name)
+		fmt.Printf("%v: Cutting over to new chain length %v from current length %v\n", base.Client.name, b.ChainLength, base.currentBlock.ChainLength)
 		txSet := base.syncTransactions(b)
 		base.startNewSearch(txSet)
 	} else {
