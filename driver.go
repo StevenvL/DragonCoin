@@ -31,7 +31,7 @@ func main() {
 		minnie.Client.address: 400,
 		mickey.Client.address: 300,
 	}
-	addrMap := map[string]*Client{alice.address: alice, bob.address: bob, charlie.address: charlie, minnie.Client.address: &minnie.Client, mickey.Client.address: &mickey.Client}
+	addrMap := map[string]*Client{alice.address: alice, bob.address: bob, charlie.address: charlie, minnie.Client.address: minnie.Client, mickey.Client.address: mickey.Client}
 	genesis := makeGenesis(
 		emptyBlock,
 		emptyTransaction,
@@ -39,6 +39,7 @@ func main() {
 		addrMap,
 		blockchain,
 	)
+	//fmt.Println(minnie.Client.lastBlock)
 	//fmt.Println(balanceMap)
 	//fmt.Printf("%+v\n", genesis)
 	//fmt.Printf("%+v\n", alice)
@@ -63,7 +64,7 @@ func main() {
 	fmt.Println("Initial balances:")
 	showBalances(*alice)
 	//fmt.Println(alice.availableGold())
-	clientList := []*Client{alice, bob, charlie, &minnie.Client, &mickey.Client}
+	clientList := []*Client{alice, bob, charlie, minnie.Client, mickey.Client}
 	fakeNet.register(clientList)
 
 	// Miners start mining.
@@ -77,7 +78,7 @@ func main() {
 	showBalances(*alice)
 	showBalances(*bob)
 	showBalances(*charlie)
-	showBalances(minnie.Client)
+	showBalances(*minnie.Client)
 	//showBalances(mickey.Client)
 
 	/*

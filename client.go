@@ -28,9 +28,10 @@ type Client struct {
 	fakeNet                        *FakeNet
 }
 
+/*
 func (base Client) String() string {
 	return fmt.Sprintf("Name: %s, Address: %s\n", base.name, base.address)
-}
+}*/
 
 func newClient(name string, keypairClient keypair, startingBlock Block, fakeNet *FakeNet) *Client {
 	client := new(Client)
@@ -147,7 +148,7 @@ func (base Client) postTransaction(outputs map[string]int, fee int) Transaction 
 	//fmt.Println(totalPayments)
 	//fmt.Println(base.availableGold())
 	if totalPayments > base.availableGold() {
-		fmt.Printf("ERROR!!!, Request %d, but account only has %d", totalPayments, base.availableGold())
+		fmt.Printf("ERROR!!!, Request %d, but account only has %d\n", totalPayments, base.availableGold())
 	}
 
 	var tx Transaction
@@ -176,7 +177,7 @@ func (base Client) postTransaction(outputs map[string]int, fee int) Transaction 
 
 */
 
-func (base Client) receiveBlock(block Block) (Block, error) {
+func (base *Client) receiveBlock(block Block) (Block, error) {
 	// If the block is a string, then deserialize it.
 	// It literally can't be, so this is pointless.
 	// If we want to handle strings, we'll need a new function for that.
@@ -188,20 +189,20 @@ func (base Client) receiveBlock(block Block) (Block, error) {
 
 	// First, make sure that the block has a valid proof.
 	if !block.hasValidProof() && !block.isGenesisBlock() {
-		fmt.Printf("Block %s does not have a valid proof", block.getID())
+		fmt.Printf("Block %s does not have a valid proof\n", block.getID())
 		return block, errors.New("Block does not have valid proof")
 	}
 
 	// Make sure that we have the previous blocks, unless it is the genesis block.
 	// If we don't have the previous blocks, request the missing blocks and exit.
 	prevBlock := base.blocks[block.PrevBlockHash]
-	if prevBlock.getID() != "" && !prevBlock.isGenesisBlock() {
+	if prevBlock.NotEmpty && !prevBlock.isGenesisBlock() {
 		stuckBlocks := base.pendingBlocks[block.PrevBlockHash]
 
 		// If this is the first time that we have identified this block as missing,
 		// send out a request for the block.
 		var stuckBlocksMap map[string]Block
-		if stuckBlocks.getID() != "" {
+		if stuckBlocks.NotEmpty {
 			base.requestMissingBlock(block)
 			stuckBlocksMap = make(map[string]Block)
 		}
@@ -216,7 +217,9 @@ func (base Client) receiveBlock(block Block) (Block, error) {
 	}
 
 	base.blocks[block.getID()] = block
-
+	//fmt.Println(base.name)
+	//fmt.Println("PRE CHECK")
+	//fmt.Printf("%+v\n", base.lastBlock)
 	if base.lastBlock.ChainLength < block.ChainLength {
 		base.lastBlock = block
 		base.setLastConfirmed()
@@ -230,10 +233,11 @@ func (base Client) receiveBlock(block Block) (Block, error) {
 	delete(base.pendingBlocks, block.getID())
 
 	for _, block := range unstuckBlocks {
-		fmt.Printf("Processing unstuck block %s", block.getID())
+		fmt.Printf("Processing unstuck block %s\n", block.getID())
 		base.receiveBlock(block)
 	}
-
+	//fmt.Println("POST CHECK")
+	//fmt.Println(base.lastBlock)
 	return block, nil
 }
 
@@ -248,7 +252,7 @@ type Message struct {
  * @param {Block} block - The block that is connected to a missing block.
  */
 func (base Client) requestMissingBlock(block Block) {
-	fmt.Print("Asking for missing block %s", block.PrevBlockHash)
+	fmt.Printf("%s asking for missing block %s \n", base.name, block.PrevBlockHash)
 	m := Message{base.address, block.PrevBlockHash}
 	b, err := json.Marshal(m)
 	if err == nil {
@@ -320,7 +324,7 @@ func (base Client) showAllBalances() {
 	fmt.Print("Show all balances:")
 
 	for id, balance := range base.lastConfirmedBlock.Balances {
-		fmt.Printf("%s: %d", id, balance)
+		fmt.Printf("%s: %d\n", id, balance)
 	}
 }
 
@@ -336,8 +340,8 @@ func (base Client) log(msg string) {
 func (base Client) showBlockChain() {
 	block := base.lastBlock
 	fmt.Print("BLOCKCHAIN:")
-	for block.getID() != "" {
-		fmt.Printf("%s", block.getID())
+	for block.NotEmpty {
+		fmt.Printf("%s\n", block.getID())
 		if _, ok := base.blocks[block.PrevBlockHash]; ok {
 			block = base.blocks[block.PrevBlockHash]
 		}

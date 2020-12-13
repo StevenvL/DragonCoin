@@ -8,7 +8,7 @@ import (
 )
 
 type Miner struct {
-	Client
+	*Client
 	startingBlock Block
 	keypairMiner  keypair
 	miningRounds  int
@@ -17,7 +17,7 @@ type Miner struct {
 
 func newMiner(name string, keypairMiner keypair, startingBlock Block, fakeNet *FakeNet) *Miner {
 	miner := new(Miner)
-	miner.Client = *newClient(name, keypairMiner, startingBlock, fakeNet)
+	miner.Client = newClient(name, keypairMiner, startingBlock, fakeNet)
 	miner.miningRounds = NUM_ROUNDS_MINING
 
 	return miner
@@ -95,6 +95,9 @@ func (base Miner) announceProof() {
 }
 
 func (base Miner) receiveBlock(block *Block) error {
+	//fmt.Println(base.Client.lastBlock)
+	//fmt.Println()
+	//fmt.Println(*block)
 	b, err := base.Client.receiveBlock(*block)
 
 	if err != nil {
