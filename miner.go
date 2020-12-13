@@ -80,7 +80,7 @@ func (base *Miner) findProof() {
 			  }
 	*/
 	//time.AfterFunc(1*time.Second, base.emitStartMining)
-	//base.emitStartMining()
+	base.emitStartMining()
 
 }
 func (base Miner) addTransaction(tx Transaction) bool {
