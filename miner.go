@@ -154,7 +154,11 @@ func (base Miner) syncTransactions(nb Block) []Transaction {
 			nbTxs = append(nbTxs, element)
 		}
 
-		cb = base.blocks[cb.PrevBlockHash]
+		if val, ok := base.blocks[cb.PrevBlockHash]; ok {
+			cb = val
+		} else {
+			cb = *new(Block)
+		}
 		nb = base.blocks[nb.PrevBlockHash]
 	}
 
