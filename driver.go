@@ -70,7 +70,7 @@ func main() {
 
 	// Miners start mining.
 	go minnie.initialize()
-	go mickey.initialize()
+	//go mickey.initialize()
 
 	// Alice transfers some money to Bob.
 

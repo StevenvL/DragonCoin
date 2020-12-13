@@ -37,14 +37,13 @@ type Block struct {
  * @param {Number} [coinbaseReward] - The gold that a miner earns for finding a block proof.
  * blockChain BlockChain, target=Blockchain.powTarget, coinbaseReward=Blockchain.cfg.coinBase, rewardAddr, prevBlock
  */
-func (base Block) makeBlock(rewardAddr string) *Block {
+func (base Block) makeBlock(rewardAddr string) Block {
 	block := new(Block)
 	block.Target = base.Target
 	block.CoinbaseReward = base.CoinbaseReward
 	block.Balances = make(map[string]int)
 	block.Transactions = make(map[string]Transaction)
 	block.NextNonce = make(map[string]int)
-	block.ChainLength = 0
 	block.RewardAddr = rewardAddr
 	block.NotEmpty = true
 
@@ -52,6 +51,7 @@ func (base Block) makeBlock(rewardAddr string) *Block {
 	block.Balances = base.Balances
 	block.NextNonce = base.NextNonce
 	block.ChainLength = base.ChainLength + 1
+
 	if base.RewardAddr != "" {
 		block.Balances[base.RewardAddr] += base.totalRewards()
 	}
@@ -219,17 +219,17 @@ func (base Block) getID() string {
  */
 func (base Block) addTransaction(tx Transaction) bool {
 	if _, dupped := base.Transactions[tx.Id]; dupped {
-		fmt.Printf(`Duplicate transaction ${tx.id}.`)
+		fmt.Printf("Duplicate transaction %v.\n", tx.Id)
 		return false
 	}
 	if len(tx.Sig) == 0 {
-		fmt.Printf(`Unsigned transaction %s`, tx.Sig)
+		fmt.Printf("Unsigned transaction %v", tx.Sig)
 		return false
 	} else if !validSignatureTransaction(tx) {
-		fmt.Printf(`Invalid signature for transaction ${tx.id}.`)
+		fmt.Printf("Invalid signature for transaction %v.\n", tx.Id)
 		return false
 	} else if !tx.sufficientFunds(base) {
-		fmt.Printf(`Insufficient gold for transaction ${tx.id}.`)
+		fmt.Printf("Insufficient gold for transaction %v.\n", tx.Id)
 		return false
 	}
 
@@ -237,11 +237,11 @@ func (base Block) addTransaction(tx Transaction) bool {
 	// This portion prevents replay attacks.
 	nonce := base.NextNonce[tx.From]
 	if tx.Nonce < nonce {
-		fmt.Printf(`Replayed transaction ${tx.id}.`)
+		fmt.Printf("Replayed transaction %v.\n", tx.Id)
 		return false
 	} else if tx.Nonce > nonce {
 		// FIXME: Need to do something to handle this case more gracefully.
-		fmt.Printf(`Out of order transaction ${tx.id}.`)
+		fmt.Printf("Out of order transaction %v.\n", tx.Id)
 		return false
 	} else {
 		base.NextNonce[tx.From] = nonce + 1

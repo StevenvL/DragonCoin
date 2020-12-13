@@ -94,11 +94,12 @@ func (base *Client) setGenesisBlock(startingBlock Block) {
 	}
 }
 
+/*
 func (base *Client) testSet(testBlock Block) {
 	//fmt.Println(base.lastBlock)
 	base.lastBlock = testBlock
 	//fmt.Println(base.lastBlock)
-}
+}*/
 
 /**
  * The amount of gold available to the client, not counting any pending
@@ -140,7 +141,7 @@ func (base Client) availableGold() int {
   *
   * @returns {Transaction} - The posted transaction.
 */
-func (base Client) postTransaction(outputs map[string]int, fee int) Transaction {
+func (base *Client) postTransaction(outputs map[string]int, fee int) Transaction {
 	var totalPayments = 0
 	for _, element := range outputs {
 		totalPayments += element
@@ -180,28 +181,35 @@ func (base *Client) receiveBlock(block Block) (Block, error) {
 	// If the block is a string, then deserialize it.
 	// It literally can't be, so this is pointless.
 	// If we want to handle strings, we'll need a new function for that.
-
+	//fmt.Println(base.name)
 	// Ignore the block if it has been received previously.
+	fmt.Println(base.name)
+	fmt.Println("Client.go LINE 185")
+	fmt.Println(block.PrevBlockHash)
 	if _, ok := base.blocks[block.getID()]; ok {
-		return block, errors.New("Invalid block")
+		//fmt.Println("Test")
+		return block, errors.New("Block Recieved Previously")
 	}
 
 	// First, make sure that the block has a valid proof.
 	if !block.hasValidProof() && !block.isGenesisBlock() {
-		fmt.Printf("Block %s does not have a valid proof\n", block.getID())
+		//fmt.Printf("Block %s does not have a valid proof\n", block.getID())
 		return block, errors.New("Block does not have valid proof")
 	}
 
 	// Make sure that we have the previous blocks, unless it is the genesis block.
 	// If we don't have the previous blocks, request the missing blocks and exit.
 	prevBlock := base.blocks[block.PrevBlockHash]
-	if !prevBlock.NotEmpty && !prevBlock.isGenesisBlock() {
+	fmt.Println("Client.go LINE 200")
+	//fmt.Println(base.blocks)
+	if !prevBlock.NotEmpty && !block.isGenesisBlock() {
 		stuckBlocks := base.pendingBlocks[block.PrevBlockHash]
 
 		// If this is the first time that we have identified this block as missing,
 		// send out a request for the block.
 		var stuckBlocksMap map[string]Block
-		fmt.Println(stuckBlocks)
+		fmt.Println("Client.go LINE 205")
+		//fmt.Println(stuckBlocks)
 		if !stuckBlocks.NotEmpty {
 			base.requestMissingBlock(block)
 			stuckBlocksMap = make(map[string]Block)
@@ -236,8 +244,8 @@ func (base *Client) receiveBlock(block Block) (Block, error) {
 		fmt.Printf("Processing unstuck block %s\n", block.getID())
 		base.receiveBlock(block)
 	}
-	//fmt.Println("POST CHECK")
-	//fmt.Println(base.lastBlock)
+	fmt.Println(" client.go 247 POST CHECK")
+	fmt.Println(base.lastBlock.getID())
 	return block, nil
 }
 
@@ -312,8 +320,10 @@ func (base Client) setLastConfirmed() {
 		confirmedBlockHeight = 0
 	}
 
+	//fmt.Printf("Client.go 323, CURRENT BLOCKS ARRAY FOR %v : %v", base.name, base.blocks)
 	//no such thing as while loop in GO
 	for block.ChainLength > confirmedBlockHeight {
+		//fmt.Println(block.ChainLength)
 		if _, ok := base.blocks[block.PrevBlockHash]; ok {
 			block = base.blocks[block.PrevBlockHash]
 		}
@@ -355,3 +365,8 @@ func (base Client) showBlockChain() {
 		}
 	}
 }
+
+/*
+func (client Client) removeProofListener() {
+	client.emitter.Off(PROOF_FOUND, client.receiveBlock)
+}*/

@@ -102,7 +102,8 @@ func validSignatureTransaction(transaction Transaction) bool {
 	bool1 := len(transaction.Sig) != 0
 	bool2 := addressMatchesKey(transaction.From, &transaction.PubKey)
 	response := verifySignature(&transaction.PubKey, getID(transaction), transaction.Sig)
-	fmt.Println(response)
+	//fmt.Print("Transaction.go line 105, Response:")
+	//fmt.Println(response)
 	bool3 := false
 	if response == nil {
 		bool3 = true
