@@ -62,7 +62,7 @@ func (base *Miner) findProof() {
 	for base.currentBlock.Proof < pausePoint {
 		//fmt.Println(base.currentBlock)
 		if base.currentBlock.hasValidProof() == true {
-			fmt.Printf("%s Found proof for block %d: %s", base.Client.name, base.currentBlock.ChainLength, base.currentBlock.Proof)
+			fmt.Printf("%s Found proof for block %d: %s\n", base.Client.name, base.currentBlock.ChainLength, base.currentBlock.Proof)
 			base.announceProof()
 			base.receiveBlock(base.currentBlock)
 			var set []Transaction

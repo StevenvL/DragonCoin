@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"time"
 )
 
 func main() {
@@ -68,13 +69,14 @@ func main() {
 	fakeNet.register(clientList)
 
 	// Miners start mining.
-	minnie.initialize()
-	mickey.initialize()
+	go minnie.initialize()
+	go mickey.initialize()
 
 	// Alice transfers some money to Bob.
 
 	fmt.Printf("Alice is transfering 40 gold to %v\n", bob.address)
 	alice.postTransaction(map[string]int{bob.address: 40}, DEFAULT_TX_FEE)
+	time.Sleep(10 * time.Second)
 	showBalances(*alice)
 	showBalances(*bob)
 	showBalances(*charlie)
