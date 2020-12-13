@@ -183,9 +183,9 @@ func (base *Client) receiveBlock(block Block) (Block, error) {
 	// If we want to handle strings, we'll need a new function for that.
 	//fmt.Println(base.name)
 	// Ignore the block if it has been received previously.
-	fmt.Println(base.name)
-	fmt.Println("Client.go LINE 185")
-	fmt.Println(block.PrevBlockHash)
+	//fmt.Println(base.name)
+	//fmt.Println("Client.go LINE 185")
+	//fmt.Println(block.PrevBlockHash)
 	if _, ok := base.blocks[block.getID()]; ok {
 		//fmt.Println("Test")
 		return block, errors.New("Block Recieved Previously")
@@ -200,7 +200,7 @@ func (base *Client) receiveBlock(block Block) (Block, error) {
 	// Make sure that we have the previous blocks, unless it is the genesis block.
 	// If we don't have the previous blocks, request the missing blocks and exit.
 	prevBlock := base.blocks[block.PrevBlockHash]
-	fmt.Println("Client.go LINE 200")
+	//fmt.Println("Client.go LINE 200")
 	//fmt.Println(base.blocks)
 	if !prevBlock.NotEmpty && !block.isGenesisBlock() {
 		stuckBlocks := base.pendingBlocks[block.PrevBlockHash]
@@ -208,7 +208,7 @@ func (base *Client) receiveBlock(block Block) (Block, error) {
 		// If this is the first time that we have identified this block as missing,
 		// send out a request for the block.
 		var stuckBlocksMap map[string]Block
-		fmt.Println("Client.go LINE 205")
+		//fmt.Println("Client.go LINE 205")
 		//fmt.Println(stuckBlocks)
 		if !stuckBlocks.NotEmpty {
 			base.requestMissingBlock(block)
@@ -244,8 +244,8 @@ func (base *Client) receiveBlock(block Block) (Block, error) {
 		fmt.Printf("Processing unstuck block %s\n", block.getID())
 		base.receiveBlock(block)
 	}
-	fmt.Println(" client.go 247 POST CHECK")
-	fmt.Println(base.lastBlock.getID())
+	//fmt.Println(" client.go 247 POST CHECK")
+	//fmt.Println(base.lastBlock.getID())
 	return block, nil
 }
 

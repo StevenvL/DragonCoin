@@ -48,17 +48,18 @@ func (base Miner) emitStartMining() {
 //Otherwise use specified array
 func (base *Miner) startNewSearch(set []Transaction) {
 	//suppoed to pass this.address and this.miningrounds to it...
-	fmt.Println("MINER.GO LINE 47")
+	//fmt.Println("MINER.GO LINE 47")
 	//fmt.Println(&base.currentBlock)
-	fmt.Printf("%+v\n\n", base.Client.lastBlock)
+	//fmt.Println(base.Client.lastBlock.getID())
+	//fmt.Printf("%+v\n\n", base.Client.lastBlock)
 	//fmt.Printf("%p\n\n", &base.currentBlock)
 	//fmt.Printf("%p\n\n", &base.Client.lastBlock)
 	base.currentBlock = base.Client.lastBlock.makeBlock(base.Client.address)
 	//fmt.Println(base.currentBlock)
 	//fmt.Printf("%p\n\n", &base.currentBlock)
 	//fmt.Printf("%p\n\n", &base.Client.lastBlock)
-	fmt.Printf("%+v\n\n", base.Client.lastBlock)
-	fmt.Println(base.currentBlock.getID())
+	//fmt.Printf("%+v\n\n", base.Client.lastBlock)
+	//fmt.Println(base.currentBlock.getID())
 
 	for _, tx := range set {
 		base.addTransaction(tx)
@@ -74,8 +75,8 @@ func (base *Miner) findProof() {
 		//fmt.Println(base.currentBlock)
 		if base.currentBlock.hasValidProof() == true {
 			fmt.Printf("%v Found proof for block %v: %v\n", base.Client.name, base.currentBlock.ChainLength, base.currentBlock.Proof)
-			fmt.Println(base.currentBlock.getID())
-			fmt.Println(base.currentBlock.PrevBlockHash)
+			//fmt.Println(base.currentBlock.getID())
+			//fmt.Println(base.currentBlock.PrevBlockHash)
 			base.announceProof()
 			//base.receiveBlock(*base.currentBlock)
 			var set []Transaction
@@ -135,6 +136,7 @@ func (base Miner) syncTransactions(nb Block) []Transaction {
 	var cbTxs []Transaction
 	var nbTxs []Transaction
 
+	fmt.Println("MINER.GO TEST1")
 	for nb.ChainLength > cb.ChainLength {
 		for _, element := range nb.Transactions {
 			nbTxs = append(nbTxs, element)
@@ -145,6 +147,7 @@ func (base Miner) syncTransactions(nb Block) []Transaction {
 		}
 	}
 
+	fmt.Println("MINER.GO TEST2")
 	for cb.NotEmpty && cb.getID() != nb.getID() {
 		for _, element := range cb.Transactions {
 			cbTxs = append(cbTxs, element)
@@ -157,6 +160,7 @@ func (base Miner) syncTransactions(nb Block) []Transaction {
 		nb = base.blocks[nb.PrevBlockHash]
 	}
 
+	fmt.Println("MINER.GO TEST3")
 	for _, element := range nbTxs {
 		indexInCbTxs := indexOf(element, cbTxs)
 		if indexInCbTxs != -1 {
