@@ -151,21 +151,20 @@ func (base Client) postTransaction(outputs map[string]int, fee int) Transaction 
 		fmt.Printf("ERROR!!!, Request %d, but account only has %d\n", totalPayments, base.availableGold())
 	}
 
-	var tx Transaction
+	var tx *Transaction
 	var sig = []byte{0}
-	tx.newTransaction(base.address, base.nonce, base.keypairClient.pubKey, sig, outputs, fee, "")
-	resTx := tx
-	signTransaction(base.keypairClient.privKey, &resTx)
+	tx = newTransaction(base.address, base.nonce, base.keypairClient.pubKey, sig, outputs, fee, "")
+	signTransaction(base.keypairClient.privKey, tx)
 
-	base.pendingOutGoingTransactionsMap[resTx.id] = resTx
+	base.pendingOutGoingTransactionsMap[tx.Id] = *tx
 
 	base.nonce++
 
-	txJSON, _ := json.Marshal(resTx)
+	txJSON, _ := json.Marshal(tx)
 	base.fakeNet.broadcast(POST_TRANSACTION, txJSON)
 	//base.emitter.Emit(POST_TRANSACTION, resTx)
 
-	return resTx
+	return *tx
 }
 
 /*
@@ -257,7 +256,8 @@ func (base Client) requestMissingBlock(block Block) {
 	m := Message{base.address, block.PrevBlockHash}
 	b, err := json.Marshal(m)
 	if err == nil {
-		base.emitter.Emit(MISSING_BLOCK, b)
+		base.fakeNet.broadcast(MISSING_BLOCK, b)
+		//base.emitter.Emit(MISSING_BLOCK, b)
 	} else {
 		fmt.Print("Error in JSON encoding in requestMissingBlock()")
 	}
@@ -268,7 +268,14 @@ func (base Client) requestMissingBlock(block Block) {
  */
 func (base Client) resendPendingTransactions() {
 	for _, value := range base.pendingOutGoingTransactionsMap {
-		base.emitter.Emit(POST_TRANSACTION, value)
+		valueJSON, err := json.Marshal(value)
+		if err == nil {
+			base.fakeNet.broadcast(POST_TRANSACTION, valueJSON)
+			//base.emitter.Emit(POST_TRANSACTION, value)
+		} else {
+			fmt.Print("Error in JSON encoding in resendPendingTransactions()")
+		}
+
 	}
 }
 

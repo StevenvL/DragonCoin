@@ -218,12 +218,12 @@ func (base Block) getID() string {
  * @returns {Boolean} - True if the transaction was added successfully.
  */
 func (base Block) addTransaction(tx Transaction) bool {
-	if _, dupped := base.Transactions[tx.id]; dupped {
+	if _, dupped := base.Transactions[tx.Id]; dupped {
 		fmt.Printf(`Duplicate transaction ${tx.id}.`)
 		return false
 	}
-	if len(tx.sig) == 0 {
-		fmt.Printf(`Unsigned transaction ${tx.id}.`)
+	if len(tx.Sig) == 0 {
+		fmt.Printf(`Unsigned transaction %s`, tx.Sig)
 		return false
 	} else if !validSignatureTransaction(tx) {
 		fmt.Printf(`Invalid signature for transaction ${tx.id}.`)
@@ -235,27 +235,27 @@ func (base Block) addTransaction(tx Transaction) bool {
 
 	// Checking and updating nonce value.
 	// This portion prevents replay attacks.
-	nonce := base.NextNonce[tx.from]
-	if tx.nonce < nonce {
+	nonce := base.NextNonce[tx.From]
+	if tx.Nonce < nonce {
 		fmt.Printf(`Replayed transaction ${tx.id}.`)
 		return false
-	} else if tx.nonce > nonce {
+	} else if tx.Nonce > nonce {
 		// FIXME: Need to do something to handle this case more gracefully.
 		fmt.Printf(`Out of order transaction ${tx.id}.`)
 		return false
 	} else {
-		base.NextNonce[tx.from] = nonce + 1
+		base.NextNonce[tx.From] = nonce + 1
 	}
 
 	// Adding the transaction to the block
-	base.Transactions[tx.id] = tx
+	base.Transactions[tx.Id] = tx
 
 	// Taking gold from the sender
-	senderBalance := base.balanceOf(tx.from)
-	base.Balances[tx.from] = senderBalance - tx.totalOutputs()
+	senderBalance := base.balanceOf(tx.From)
+	base.Balances[tx.From] = senderBalance - tx.totalOutputs()
 
 	// Giving gold to the specified output addresses
-	for address, amount := range tx.outputs {
+	for address, amount := range tx.Outputs {
 		oldBalance := base.balanceOf(address)
 		base.Balances[address] = amount + oldBalance
 	}
@@ -323,7 +323,7 @@ func (base Block) balanceOf(addr string) int {
 func (base Block) totalRewards() int {
 	reward := base.CoinbaseReward
 	for _, tx := range base.Transactions {
-		reward += tx.fee
+		reward += tx.Fee
 	}
 	return reward
 }
@@ -338,7 +338,7 @@ func (base Block) totalRewards() int {
  * @returns {boolean} - True if the transaction is contained in this block.
  */
 func (base Block) contains(tx Transaction) bool {
-	if _, ok := base.Transactions[tx.id]; ok {
+	if _, ok := base.Transactions[tx.Id]; ok {
 		return true
 	} else {
 		return false

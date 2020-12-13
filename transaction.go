@@ -1,9 +1,10 @@
 package main
 
 import (
+	"bytes"
 	"crypto/rsa"
-	"encoding/json"
 	"fmt"
+	"strconv"
 	"strings"
 )
 
@@ -17,27 +18,27 @@ type TransactionIO struct {
 
 // Transaction object
 type Transaction struct {
-	tranctionIO TransactionIO
-	from        string
-	nonce       int
-	pubKey      rsa.PublicKey
-	sig         []byte
-	outputs     map[string]int
-	fee         int
-	data        string
-	id          string
+	//tranctionIO TransactionIO
+	From    string
+	Nonce   int
+	PubKey  rsa.PublicKey
+	Sig     []byte
+	Outputs map[string]int
+	Fee     int
+	Data    string
+	Id      string
 }
 
-func (base Transaction) newTransaction(from string, nonce int, pubKey rsa.PublicKey, sig []byte, outputs map[string]int, fee int, data string) *Transaction {
+func newTransaction(from string, nonce int, pubKey rsa.PublicKey, sig []byte, outputs map[string]int, fee int, data string) *Transaction {
 	transaction := new(Transaction)
-	transaction.from = from
-	transaction.nonce = nonce
-	transaction.pubKey = pubKey
-	transaction.sig = sig
-	transaction.outputs = outputs
-	transaction.fee = fee
-	transaction.data = data
-	transaction.id = getID(*transaction)
+	transaction.From = from
+	transaction.Nonce = nonce
+	transaction.PubKey = pubKey
+	transaction.Sig = sig
+	transaction.Outputs = outputs
+	transaction.Fee = fee
+	transaction.Data = data
+	transaction.Id = getID(*transaction)
 
 	if len(outputs) > 0 {
 
@@ -56,17 +57,26 @@ func (base Transaction) newTransaction(from string, nonce int, pubKey rsa.Public
 }
 
 func getID(transaction Transaction) string {
-	/*
-	   return sha256hash(TX_CONST +
-	       transaction.from +
-	       strconv.Itoa(transaction.nonce) +
-	       getStringPubKey(&transaction.pubKey) +
-	       arrayToString(transaction.outputs, ",") +
-	       strconv.Itoa(transaction.fee) +
-	       transaction.data)
-	*/
-	b, _ := json.Marshal(transaction)
-	return sha256hash(TX_CONST + string(b))
+
+	return sha256hash(TX_CONST +
+		transaction.From +
+		strconv.Itoa(transaction.Nonce) +
+		getStringPubKey(&transaction.PubKey) +
+		createKeyValuePairs(transaction.Outputs) +
+		strconv.Itoa(transaction.Fee) +
+		transaction.Data)
+
+	//b, _ := json.Marshal(transaction)
+	//return sha256hash(TX_CONST + string(b))
+}
+
+//From https://stackoverflow.com/a/48150584
+func createKeyValuePairs(m map[string]int) string {
+	b := new(bytes.Buffer)
+	for key, value := range m {
+		fmt.Fprintf(b, "%s=\"%s\"\n", key, value)
+	}
+	return b.String()
 }
 
 //Passes transaction by pointer so we can modify inside it.
@@ -79,7 +89,7 @@ func getID(transaction Transaction) string {
 func signTransaction(privKey *rsa.PrivateKey, transaction *Transaction) {
 	id := getID(*transaction)
 	res := sign(privKey, id)
-	transaction.sig = res
+	transaction.Sig = res
 }
 
 /**
@@ -89,14 +99,14 @@ func signTransaction(privKey *rsa.PrivateKey, transaction *Transaction) {
  * @returns {Boolean} - Validity of the signature and from address.
  */
 func validSignatureTransaction(transaction Transaction) bool {
-	bool1 := len(transaction.sig) != 0
-	bool2 := addressMatchesKey(transaction.from, &transaction.pubKey)
-	response := verifySignature(&transaction.pubKey, transaction.id, transaction.sig)
+	bool1 := len(transaction.Sig) != 0
+	bool2 := addressMatchesKey(transaction.From, &transaction.PubKey)
+	response := verifySignature(&transaction.PubKey, getID(transaction), transaction.Sig)
+	fmt.Println(response)
 	bool3 := false
 	if response == nil {
 		bool3 = true
 	}
-
 	return bool1 && bool2 && bool3
 }
 
@@ -110,7 +120,7 @@ func validSignatureTransaction(transaction Transaction) bool {
  */
 func (base Transaction) sufficientFunds(block Block) bool {
 	blockBalanceMap := block.Balances
-	blockValue := blockBalanceMap[base.from]
+	blockValue := blockBalanceMap[base.From]
 	return base.totalOutputs() <= blockValue
 }
 
@@ -121,7 +131,7 @@ func (base Transaction) sufficientFunds(block Block) bool {
  */
 func (base Transaction) totalOutputs() int {
 	var total = 0
-	for _, value := range base.outputs {
+	for _, value := range base.Outputs {
 		total += value
 	}
 	return total
