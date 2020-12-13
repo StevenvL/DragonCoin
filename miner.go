@@ -76,7 +76,7 @@ func (base *Miner) findProof() {
 	for base.currentBlock.Proof < pausePoint {
 		//fmt.Println(base.currentBlock)
 		if base.currentBlock.hasValidProof() == true {
-			fmt.Printf("%v Found proof for block %v: %v\n", base.Client.name, base.currentBlock.ChainLength, base.currentBlock.Proof)
+			fmt.Printf("%v Found proof for block %v: %v, Character: %s\n", base.Client.name, base.currentBlock.ChainLength, base.currentBlock.Proof, base.currentBlock.generateDnDCharacter())
 			//fmt.Println(base.currentBlock.getID())
 			//fmt.Println(base.currentBlock.PrevBlockHash)
 			base.announceProof()

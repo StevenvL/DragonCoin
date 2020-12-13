@@ -350,11 +350,11 @@ func (base Block) contains(tx Transaction) bool {
 }
 
 func (base Block) getRace() string {
-	ind := 1
-	choice := string(base.getID()[ind])
+	hash := base.getID()
+	choice := string(hash[len(hash)-1])
 	switch choice {
 	case "0":
-		choice = "Dragonborn"
+		choice = "Human"
 	case "1":
 		choice = "Dwarf"
 	case "2":
@@ -362,7 +362,7 @@ func (base Block) getRace() string {
 	case "3":
 		choice = "Gnome"
 	case "4":
-		choice = "Human"
+		choice = "Dragonborn"
 	case "5":
 		choice = "Halfling"
 	case "6":
@@ -392,8 +392,8 @@ func (base Block) getRace() string {
 }
 
 func (base Block) getClass() string {
-	ind := 0
-	choice := string(base.getID()[ind])
+	hash := base.getID()
+	choice := string(hash[len(hash)-2])
 	switch choice {
 	case "0":
 		choice = "Fighter"
@@ -428,7 +428,7 @@ func (base Block) getClass() string {
 	case "e":
 		choice = "Noble"
 	case "f":
-		choice = "Commoner"
+		choice = "Blackguard"
 	}
 	return choice
 }
