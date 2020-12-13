@@ -77,11 +77,23 @@ func main() {
 	fmt.Printf("Alice is transfering 40 gold to %v\n", bob.address)
 	alice.postTransaction(map[string]int{bob.address: 40}, DEFAULT_TX_FEE)
 	time.Sleep(10 * time.Second)
-	showBalances(*alice)
-	showBalances(*bob)
-	showBalances(*charlie)
+	fmt.Println()
+	fmt.Printf("Minnie has a chain of length %v:", minnie.Client.lastBlock.ChainLength)
+
+	fmt.Println()
+	fmt.Printf("Mickey has a chain of length %v:", mickey.Client.lastBlock.ChainLength)
+
+	fmt.Println()
+	fmt.Println("Final balances (Minnie's perspective):")
 	showBalances(*minnie.Client)
-	//showBalances(mickey.Client)
+
+	fmt.Println()
+	fmt.Println("Final balances (Mickey's perspective):")
+	showBalances(*mickey.Client)
+
+	fmt.Println()
+	fmt.Println("Final balances (Alice's perspective):")
+	showBalances(*alice)
 
 	/*
 	  setTimeout(() => {
