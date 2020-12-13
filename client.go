@@ -196,13 +196,14 @@ func (base *Client) receiveBlock(block Block) (Block, error) {
 	// Make sure that we have the previous blocks, unless it is the genesis block.
 	// If we don't have the previous blocks, request the missing blocks and exit.
 	prevBlock := base.blocks[block.PrevBlockHash]
-	if prevBlock.NotEmpty && !prevBlock.isGenesisBlock() {
+	if !prevBlock.NotEmpty && !prevBlock.isGenesisBlock() {
 		stuckBlocks := base.pendingBlocks[block.PrevBlockHash]
 
 		// If this is the first time that we have identified this block as missing,
 		// send out a request for the block.
 		var stuckBlocksMap map[string]Block
-		if stuckBlocks.NotEmpty {
+		fmt.Println(stuckBlocks)
+		if !stuckBlocks.NotEmpty {
 			base.requestMissingBlock(block)
 			stuckBlocksMap = make(map[string]Block)
 		}
@@ -340,7 +341,7 @@ func (base Client) log(msg string) {
 func (base Client) showBlockChain() {
 	block := base.lastBlock
 	fmt.Print("BLOCKCHAIN:")
-	for block.NotEmpty {
+	for !block.NotEmpty {
 		fmt.Printf("%s\n", block.getID())
 		if _, ok := base.blocks[block.PrevBlockHash]; ok {
 			block = base.blocks[block.PrevBlockHash]
