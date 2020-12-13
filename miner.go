@@ -136,18 +136,16 @@ func (base Miner) syncTransactions(nb Block) []Transaction {
 	var cbTxs []Transaction
 	var nbTxs []Transaction
 
-	fmt.Println("MINER.GO TEST1")
 	for nb.ChainLength > cb.ChainLength {
 		for _, element := range nb.Transactions {
 			nbTxs = append(nbTxs, element)
-			nb = base.blocks[nb.PrevBlockHash]
-			if nb.getID() == "" {
+			if !nb.NotEmpty {
 				fmt.Print("no result found in map")
 			}
 		}
+		nb = base.blocks[nb.PrevBlockHash]
 	}
 
-	fmt.Println("MINER.GO TEST2")
 	for cb.NotEmpty && cb.getID() != nb.getID() {
 		for _, element := range cb.Transactions {
 			cbTxs = append(cbTxs, element)
@@ -160,7 +158,6 @@ func (base Miner) syncTransactions(nb Block) []Transaction {
 		nb = base.blocks[nb.PrevBlockHash]
 	}
 
-	fmt.Println("MINER.GO TEST3")
 	for _, element := range nbTxs {
 		indexInCbTxs := indexOf(element, cbTxs)
 		if indexInCbTxs != -1 {
