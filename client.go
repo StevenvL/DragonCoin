@@ -8,11 +8,6 @@ import (
 	emission "github.com/chuckpreslar/emission"
 )
 
-//var blockchain = newBlockchain()
-
-//var emitter = emission.NewEmitter()
-
-//Client NEED TO ADD STUFF DEALING WITH BLOCK
 type Client struct {
 	name                           string
 	keypairClient                  keypair
@@ -29,6 +24,7 @@ type Client struct {
 }
 
 /*
+toString() method if needed.
 func (base Client) String() string {
 	return fmt.Sprintf("Name: %s, Address: %s\n", base.name, base.address)
 }*/
@@ -52,8 +48,6 @@ func newClient(name string, keypairClient keypair, startingBlock Block, fakeNet 
 	// A map of all block hashes to the accepted blocks.
 	client.blocks = make(map[string]Block)
 	client.pendingBlocks = make(map[string]Block)
-	//fmt.Println("CLIENT.GO LINE 53")
-	//fmt.Println(startingBlock)
 
 	if startingBlock.NotEmpty {
 		client.setGenesisBlock(startingBlock)
@@ -78,13 +72,10 @@ func (base *Client) setGenesisBlock(startingBlock Block) {
 	if base.lastBlock.NotEmpty {
 		fmt.Print("ERROR!, Cannot set genesis block for existing blockchain")
 	} else {
-		//fmt.Println("CLIENT.GO LINE 78")
-		//fmt.Println(startingBlock)
 		// Transactions from this block or older are assumed to be confirmed,
 		// and therefore are spendable by the client. The transactions could
 		// roll back, but it is unlikely.
 		base.lastConfirmedBlock = startingBlock
-		//fmt.Println(base.lastConfirmedBlock)
 
 		// The last block seen.  Any transactions after lastConfirmedBlock
 		// up to lastBlock are considered pending.
@@ -93,13 +84,6 @@ func (base *Client) setGenesisBlock(startingBlock Block) {
 		base.blocks[startingBlock.getID()] = startingBlock
 	}
 }
-
-/*
-func (base *Client) testSet(testBlock Block) {
-	//fmt.Println(base.lastBlock)
-	base.lastBlock = testBlock
-	//fmt.Println(base.lastBlock)
-}*/
 
 /**
  * The amount of gold available to the client, not counting any pending
@@ -126,28 +110,21 @@ func (base Client) availableGold() int {
 }
 
 /**
-
-   TODO!!!. HOW DO WE BROADCAST?
-   We could send it using function somehow....
-   Might have to send send array of pointer of client structs
-
-  * Broadcasts a transaction from the client giving gold to the clients
-  * specified in 'outputs'. A transaction fee may be specified, which can
-  * be more or less than the default value.
-  *
-  * @param {Array} outputs - The list of outputs of other addresses and
-  *    amounts to pay.
-  * @param {number} [fee] - The transaction fee reward to pay the miner.
-  *
-  * @returns {Transaction} - The posted transaction.
-*/
+ * Broadcasts a transaction from the client giving gold to the clients
+ * specified in 'outputs'. A transaction fee may be specified, which can
+ * be more or less than the default value.
+ *
+ * @param {Array} outputs - The list of outputs of other addresses and
+ *    amounts to pay.
+ * @param {number} [fee] - The transaction fee reward to pay the miner.
+ *
+ * @returns {Transaction} - The posted transaction.
+ */
 func (base *Client) postTransaction(outputs map[string]int, fee int) Transaction {
 	var totalPayments = 0
 	for _, element := range outputs {
 		totalPayments += element
 	}
-	//fmt.Println(totalPayments)
-	//fmt.Println(base.availableGold())
 	if totalPayments > base.availableGold() {
 		fmt.Printf("ERROR!!!, Request %d, but account only has %d\n", totalPayments, base.availableGold())
 	}
@@ -163,7 +140,6 @@ func (base *Client) postTransaction(outputs map[string]int, fee int) Transaction
 
 	txJSON, _ := json.Marshal(tx)
 	base.fakeNet.broadcast(POST_TRANSACTION, txJSON)
-	//base.emitter.Emit(POST_TRANSACTION, resTx)
 
 	return *tx
 }
@@ -176,40 +152,30 @@ func (base *Client) postTransaction(outputs map[string]int, fee int) Transaction
    otherwise we have invalid block.
 
 */
-
 func (base *Client) receiveBlock(block Block) (Block, error) {
 	// If the block is a string, then deserialize it.
 	// It literally can't be, so this is pointless.
 	// If we want to handle strings, we'll need a new function for that.
-	//fmt.Println(base.name)
 	// Ignore the block if it has been received previously.
-	//fmt.Println(base.name)
-	//fmt.Println("Client.go LINE 185")
-	//fmt.Println(block.PrevBlockHash)
+
 	if _, ok := base.blocks[block.getID()]; ok {
-		//fmt.Println("Test")
 		return block, errors.New("Block Recieved Previously")
 	}
 
 	// First, make sure that the block has a valid proof.
 	if !block.hasValidProof() && !block.isGenesisBlock() {
-		//fmt.Printf("Block %s does not have a valid proof\n", block.getID())
 		return block, errors.New("Block does not have valid proof")
 	}
 
 	// Make sure that we have the previous blocks, unless it is the genesis block.
 	// If we don't have the previous blocks, request the missing blocks and exit.
 	prevBlock := base.blocks[block.PrevBlockHash]
-	//fmt.Println("Client.go LINE 200")
-	//fmt.Println(base.blocks)
 	if !prevBlock.NotEmpty && !block.isGenesisBlock() {
 		stuckBlocks := base.pendingBlocks[block.PrevBlockHash]
 
 		// If this is the first time that we have identified this block as missing,
 		// send out a request for the block.
 		var stuckBlocksMap map[string]Block
-		//fmt.Println("Client.go LINE 205")
-		//fmt.Println(stuckBlocks)
 		if !stuckBlocks.NotEmpty {
 			base.requestMissingBlock(block)
 			stuckBlocksMap = make(map[string]Block)
@@ -225,9 +191,6 @@ func (base *Client) receiveBlock(block Block) (Block, error) {
 	}
 
 	base.blocks[block.getID()] = block
-	//fmt.Println(base.name)
-	//fmt.Println("PRE CHECK")
-	//fmt.Printf("%+v\n", base.lastBlock)
 	if base.lastBlock.ChainLength < block.ChainLength {
 		base.lastBlock = block
 		base.setLastConfirmed()
@@ -244,8 +207,6 @@ func (base *Client) receiveBlock(block Block) (Block, error) {
 		fmt.Printf("Processing unstuck block %s\n", block.getID())
 		base.receiveBlock(block)
 	}
-	//fmt.Println(" client.go 247 POST CHECK")
-	//fmt.Println(base.lastBlock.getID())
 	return block, nil
 }
 
@@ -265,7 +226,6 @@ func (base Client) requestMissingBlock(block Block) {
 	b, err := json.Marshal(m)
 	if err == nil {
 		base.fakeNet.broadcast(MISSING_BLOCK, b)
-		//base.emitter.Emit(MISSING_BLOCK, b)
 	} else {
 		fmt.Print("Error in JSON encoding in requestMissingBlock()")
 	}
@@ -279,7 +239,6 @@ func (base Client) resendPendingTransactions() {
 		valueJSON, err := json.Marshal(value)
 		if err == nil {
 			base.fakeNet.broadcast(POST_TRANSACTION, valueJSON)
-			//base.emitter.Emit(POST_TRANSACTION, value)
 		} else {
 			fmt.Print("Error in JSON encoding in resendPendingTransactions()")
 		}
@@ -302,7 +261,6 @@ func (base Client) provideMissingBlock(msg []byte) {
 		fmt.Print("Providing missing block %s", message.missing)
 		newBlock := base.blocks[message.missing]
 
-		//this.net.sendMessage(msg.from, Blockchain.PROOF_FOUND, block);
 		base.emitter.Emit(PROOF_FOUND, message.from, newBlock)
 	}
 }
@@ -320,10 +278,8 @@ func (base Client) setLastConfirmed() {
 		confirmedBlockHeight = 0
 	}
 
-	//fmt.Printf("Client.go 323, CURRENT BLOCKS ARRAY FOR %v : %v", base.name, base.blocks)
-	//no such thing as while loop in GO
+	//While loop in go
 	for block.ChainLength > confirmedBlockHeight {
-		//fmt.Println(block.ChainLength)
 		if _, ok := base.blocks[block.PrevBlockHash]; ok {
 			block = base.blocks[block.PrevBlockHash]
 		}
@@ -365,8 +321,3 @@ func (base Client) showBlockChain() {
 		}
 	}
 }
-
-/*
-func (client Client) removeProofListener() {
-	client.emitter.Off(PROOF_FOUND, client.receiveBlock)
-}*/

@@ -14,7 +14,6 @@ func main() {
 	emptyKeys := keypair{}
 	emptyBlock := Block{}
 	emptyTransaction := Transaction{}
-	//fmt.Println(emptyBlock.empty)
 	alice := newClient("Alice", emptyKeys, emptyBlock, fakeNet)
 	bob := newClient("Bob", emptyKeys, emptyBlock, fakeNet)
 	charlie := newClient("Charlie", emptyKeys, emptyBlock, fakeNet)
@@ -40,13 +39,6 @@ func main() {
 		addrMap,
 		blockchain,
 	)
-	//fmt.Println(minnie.Client.lastBlock)
-	//fmt.Println(balanceMap)
-	//fmt.Printf("%+v\n", genesis)
-	//fmt.Printf("%+v\n", alice)
-	//alice.setGenesisBlock(*genesis)
-	//fmt.Println(alice.lastBlock)
-
 	// Late miner - Donald has more mining power, represented by the miningRounds.
 	// (Mickey and Minnie have the default of 2000 rounds).
 	donald := newMiner("Donald", emptyKeys, *genesis, fakeNet)
@@ -94,46 +86,6 @@ func main() {
 	fmt.Println()
 	fmt.Println("Final balances (Alice's perspective):")
 	showBalances(*alice)
-
-	/*
-	  setTimeout(() => {
-	    fmt.Println()
-	    fmt.Println("***Starting a late-to-the-party miner***")
-	    fmt.Println()
-	    fakeNet.register(donald)
-	    donald.initialize()
-	  }, 2000)
-	*/
-
-	//time.AfterFunc(10*time.Second, endSimulation)
-	//time.Sleep(11 * time.Second)
-	/*
-	  // Print out the final balances after it has been running for some time.
-	  setTimeout(() => {
-	    fmt.Println()
-	    fmt.Println(`Minnie has a chain of length ${minnie.currentBlock.chainLength}:`)
-
-	    fmt.Println()
-	    fmt.Println(`Mickey has a chain of length ${mickey.currentBlock.chainLength}:`)
-
-	    fmt.Println()
-	    fmt.Println(`Donald has a chain of length ${donald.currentBlock.chainLength}:`)
-
-	    fmt.Println()
-	    fmt.Println("Final balances (Minnie's perspective):")
-	    showBalances(minnie)
-
-	    fmt.Println()
-	    fmt.Println("Final balances (Alice's perspective):")
-	    showBalances(alice)
-
-	    fmt.Println()
-	    fmt.Println("Final balances (Donald's perspective):")
-	    showBalances(donald)
-
-	    process.exit(0)
-	  }, 5000)
-	*/
 }
 
 func endSimulation() {

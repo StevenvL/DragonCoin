@@ -38,8 +38,6 @@ func (base FakeNet) broadcast(message string, jsonObject []byte) {
 	}
 }
 
-//TODO
-//UNSURE IF THIS EMITS TO THE RIGHT CLIENT OR EVERY CLIENT
 func (base FakeNet) sendMessage(address string, message string, jsonObject []byte) {
 	if message == "POST_TRANSACTION" {
 		var tx Transaction

@@ -91,7 +91,6 @@ func makeGenesis(blockClass Block, transactionClass Transaction, clientBalanceMa
 		fmt.Printf("rip")
 	}
 	blockchain.cfg.powTarget = POW_BASE_TARGET.Rsh(POW_BASE_TARGET, POW_LEADING_ZEROES)
-	//fmt.Println(blockchain.cfg.powTarget)
 
 	// If startingBalances was specified, we initialize our balances to that object.
 	//BlockChain.balances = startingBalances //|| {};
@@ -103,7 +102,6 @@ func makeGenesis(blockClass Block, transactionClass Transaction, clientBalanceMa
 			balances[client.address] = balance;
 		  }
 		}*/
-	//fmt.Printf("%+v\n", blockchain.cfg)
 	g := blockchain.makeEmptyBlock()
 
 	// Initializing starting balances in the genesis block.
@@ -132,83 +130,8 @@ func deserializeBlock(o Block) Block {
 	return o
 	//}
 
-	/*
-		b := blockchain.cfg.blockClass.newBlock(blockchain)
-		b.chainLength, _ = strconv.ParseInt(o.chainLength, 10, 32)
-		b.timestamp = o.timestamp
-
-		if b.isGenesisBlock() {
-			// Balances need to be recreated and restored in a map.
-			for clientID, amount := range o.balances {
-				b.balances[clientID] = amount
-			}
-		} else {
-			b.prevBlockHash = o.prevBlockHash
-			b.proof = o.proof
-			b.rewardAddr = o.rewardAddr
-			// Likewise, transactions need to be recreated and restored in a map.
-			b.transactions = make(map[string]Transaction)
-			if len(o.transactions) != 0 {
-				for txID, txJson := range o.transactions {
-					//tx := blockchain.cfg.transactionClass.newTransaction(txJson) NO JSON SUPPORT
-					tx := txJson
-					b.transactions[txID] = tx
-				}
-			}
-		}
-
-		return b
-	*/
 }
 
 func (blockchain *BlockChain) makeEmptyBlock() *Block {
-	//fmt.Printf("%+v\n", blockchain.cfg)
 	return blockchain.cfg.blockClass.emptyBlock(*blockchain)
 }
-
-/* This function is useless.
-func (blockchain BlockChain) makeTransaction(o Transaction) Transaction {
-	if reflect.TypeOf(o) == reflect.TypeOf(blockchain.cfg.transactionClass) {
-		return o
-	} /*else { //CAN't HANDLE ANONYMOUS OBJECTS
-		return blockchain.cfg.transactionClass.newTransaction(o)
-	}
-	return o
-
-}*/
-/*
-These are all useless, everything here is publically available.
-
-func (blockchain BlockChain) getPOW_TARGET() *big.Int {
-	return blockchain.cfg.powTarget
-}
-func (blockchain BlockChain) getCOINBASE_AMT_ALLOWED() int {
-	return blockchain.cfg.coinbaseAmount
-}
-func (blockchain BlockChain) getDEFAULT_TX_FEE() int {
-	return blockchain.cfg.defaultTxFee
-}
-func (blockchain BlockChain) getCONFIRMED_DEPTH() int {
-	return blockchain.cfg.confirmedDepth
-}
-
-func (blockchain BlockChain) MISSING_BLOCK() string {
-	return MISSING_BLOCK
-}
-
-func (blockchain BlockChain) POST_TRANSACTION() string {
-	return POST_TRANSACTION
-}
-
-func (blockchain BlockChain) PROOF_FOUND() string {
-	return PROOF_FOUND
-}
-
-func (blockchain BlockChain) START_MINING() string {
-	return START_MINING
-}
-
-func (blockchain BlockChain) NUM_ROUNDS_MINING() int {
-	return NUM_ROUNDS_MINING
-}
-*/

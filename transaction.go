@@ -39,20 +39,6 @@ func newTransaction(from string, nonce int, pubKey rsa.PublicKey, sig []byte, ou
 	transaction.Fee = fee
 	transaction.Data = data
 	transaction.Id = getID(*transaction)
-
-	if len(outputs) > 0 {
-
-	}
-	/* UNSURE IF WE NEED TO CONVER TO GOLANG
-	      Looks like it just parses the int to decimal.
-	    if (outputs) outputs.forEach(({amount, address}) => {
-	     if (typeof amount !== 'number') {
-	       amount = parseInt(amount, 10);
-	     }
-	     this.outputs.push({amount, address});
-	   });
-	*/
-
 	return transaction
 }
 
@@ -65,9 +51,6 @@ func getID(transaction Transaction) string {
 		createKeyValuePairs(transaction.Outputs) +
 		strconv.Itoa(transaction.Fee) +
 		transaction.Data)
-
-	//b, _ := json.Marshal(transaction)
-	//return sha256hash(TX_CONST + string(b))
 }
 
 //From https://stackoverflow.com/a/48150584
@@ -102,8 +85,6 @@ func validSignatureTransaction(transaction Transaction) bool {
 	bool1 := len(transaction.Sig) != 0
 	bool2 := addressMatchesKey(transaction.From, &transaction.PubKey)
 	response := verifySignature(&transaction.PubKey, getID(transaction), transaction.Sig)
-	//fmt.Print("Transaction.go line 105, Response:")
-	//fmt.Println(response)
 	bool3 := false
 	if response == nil {
 		bool3 = true
