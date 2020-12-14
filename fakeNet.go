@@ -38,6 +38,13 @@ func (base FakeNet) broadcast(message string, jsonObject []byte) {
 	}
 }
 
+/**
+ * Sends message msg and payload o directly to Client name.
+ *
+ * @param {String} address - the public key address of the client or miner to which to send the message
+ * @param {String} msg - the name of the event being broadcasted (e.g. "PROOF_FOUND")
+ * @param {Object} o - payload of the message
+ */
 func (base FakeNet) sendMessage(address string, message string, jsonObject []byte) {
 	if message == "POST_TRANSACTION" {
 		var tx Transaction
@@ -56,6 +63,13 @@ func (base FakeNet) sendMessage(address string, message string, jsonObject []byt
 	}
 }
 
+/**
+ * Tests whether a client is registered with the network.
+ *
+ * @param {Client} client - the client to test for.
+ *
+ * @returns {boolean} True if the client is already registered.
+ */
 func (base FakeNet) recognizes(client Client) bool {
 	for address, client := range base.clients {
 		if reflect.DeepEqual(base.clients[address], client) {
